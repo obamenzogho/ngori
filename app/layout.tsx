@@ -36,6 +36,7 @@ export default function RootLayout({
           type="text/javascript"
           crossOrigin="anonymous"
         ></script>
+        <script src="https://pl29139984.profitablecpmratenetwork.com/f1/46/2a/f1462a426ab63b1de2664d62bd5160c7.js"></script>
       </head>
       <body className="min-h-full flex flex-col bg-gradient-to-br from-slate-900 to-slate-800 text-white">
         {children}

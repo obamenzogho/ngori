@@ -167,60 +167,45 @@ export default function HomePageClient({
         // localStorage not available
       }
     }
-  }, [hasVisitedClient]);
+}, [hasVisitedClient]);
 
   useEffect(() => {
-    // Load Adsterra script and initialize
     if (typeof window === 'undefined') return;
 
-    // Define _atws if not exists
+    // Load Adsterra native banner script
+    const nativeScript = document.createElement('script');
+    nativeScript.async = true;
+    nativeScript.setAttribute('data-cfasync', 'false');
+    nativeScript.src = 'https://pl29139985.profitablecpmratenetwork.com/3b8b394af5e5faeda0898b04416b8c81/invoke.js';
+    document.body.appendChild(nativeScript);
+
+    // Load Adsterra core and footer banner
     if (typeof (window as Window & { _atws?: unknown })._atws !== 'object') {
       (window as Window & { _atws?: { _a_ : { placementId: number; target: string; id: string }[] } })._atws = { _a_: [] };
     }
 
-    const script = document.createElement('script');
-    script.async = true;
-    script.src = 'https://cdn.adsterra.com/core.min.js';
-    script.setAttribute('data-api-key', process.env.NEXT_PUBLIC_ADSTERRA_API_KEY || '');
-    script.crossOrigin = 'anonymous';
+    const coreScript = document.createElement('script');
+    coreScript.async = true;
+    coreScript.src = 'https://cdn.adsterra.com/core.min.js';
+    coreScript.setAttribute('data-api-key', process.env.NEXT_PUBLIC_ADSTERRA_API_KEY || '');
+    coreScript.crossOrigin = 'anonymous';
     
-    script.onload = () => {
+    coreScript.onload = () => {
       if (typeof (window as Window & { _atws?: unknown })._atws === 'object' && (window as Window & { _atws?: { _a_: { placementId: number; target: string; id: string }[] } })._atws?._a_) {
         (window as Window & { _atws?: { _a_: { placementId: number; target: string; id: string }[] } })._atws!._a_.push({ 
-          placementId: 1234567, 
+          placementId: 3248886, 
           target: "_blank",
           id: "adsterra-home-footer-banner"
         });
       }
     };
 
-    document.body.appendChild(script);
+    document.body.appendChild(coreScript);
 
     return () => {
-      if (script.parentNode) {
-        script.parentNode.removeChild(script);
-      }
+      if (nativeScript.parentNode) nativeScript.parentNode.removeChild(nativeScript);
+      if (coreScript.parentNode) coreScript.parentNode.removeChild(coreScript);
     };
-  }, []);
-
-  useEffect(() => {
-    // Initialize Adsterra placement
-    const initializeAdsterra = () => {
-      if (typeof _atws !== 'object') {
-        _atws = { _a_: [] };
-      }
-_atws._a_.push({ 
-          placementId: 3248886,
-        target: "_blank",
-        id: "adsterra-home-footer-banner"
-      });
-    };
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initializeAdsterra);
-    } else {
-      initializeAdsterra();
-    }
   }, []);
 
   const playlists = initialContent.playlists;
@@ -360,6 +345,21 @@ _atws._a_.push({
           </div>
         </div>
       </header>
+
+      <div className="container mx-auto px-4 py-4 flex justify-center overflow-x-auto">
+        <div id="banner-728x90">
+          <script dangerouslySetInnerHTML={{ __html: `
+            atOptions = {
+              'key' : '3c1573cf88699be69e51c3767ebdd818',
+              'format' : 'iframe',
+              'height' : 90,
+              'width' : 728,
+              'params' : {}
+            };
+          ` }} />
+          <script src="https://www.highperformanceformat.com/3c1573cf88699be69e51c3767ebdd818/invoke.js"></script>
+        </div>
+      </div>
 
       <main className="container mx-auto px-4 py-12">
         {!hasVisitedBefore && (
@@ -692,6 +692,9 @@ _atws._a_.push({
         <div className="container mx-auto px-4 py-8">
           <div className="mb-8 rounded border border-slate-700 bg-slate-800/50 p-4 text-center">
             <div id="adsterra-home-footer-banner"></div>
+          </div>
+          <div className="my-8 rounded border border-slate-700 bg-slate-800/50 p-4 text-center">
+            <div id="container-3b8b394af5e5faeda0898b04416b8c81"></div>
           </div>
           <div className="text-center text-sm text-slate-400">
             <p>© 2026 Ngori - Partager et decouvrir du contenu</p>
