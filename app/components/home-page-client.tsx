@@ -4,6 +4,12 @@ import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 
 const VISITOR_FLAG = 'ngori_visited';
 
+declare global {
+  interface Window {
+    _atws?: { _a_: { placementId: number; target: string; id: string }[] };
+  }
+}
+
 function getHasVisited(): boolean {
   try {
     return localStorage.getItem(VISITOR_FLAG) === 'true';
@@ -162,6 +168,60 @@ export default function HomePageClient({
       }
     }
   }, [hasVisitedClient]);
+
+  useEffect(() => {
+    // Load Adsterra script and initialize
+    if (typeof window === 'undefined') return;
+
+    // Define _atws if not exists
+    if (typeof (window as Window & { _atws?: unknown })._atws !== 'object') {
+      (window as Window & { _atws?: { _a_ : { placementId: number; target: string; id: string }[] } })._atws = { _a_: [] };
+    }
+
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = 'https://cdn.adsterra.com/core.min.js';
+    script.setAttribute('data-api-key', process.env.NEXT_PUBLIC_ADSTERRA_API_KEY || '');
+    script.crossOrigin = 'anonymous';
+    
+    script.onload = () => {
+      if (typeof (window as Window & { _atws?: unknown })._atws === 'object' && (window as Window & { _atws?: { _a_: { placementId: number; target: string; id: string }[] } })._atws?._a_) {
+        (window as Window & { _atws?: { _a_: { placementId: number; target: string; id: string }[] } })._atws!._a_.push({ 
+          placementId: 1234567, 
+          target: "_blank",
+          id: "adsterra-home-footer-banner"
+        });
+      }
+    };
+
+    document.body.appendChild(script);
+
+    return () => {
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    // Initialize Adsterra placement
+    const initializeAdsterra = () => {
+      if (typeof _atws !== 'object') {
+        _atws = { _a_: [] };
+      }
+_atws._a_.push({ 
+          placementId: 3248886,
+        target: "_blank",
+        id: "adsterra-home-footer-banner"
+      });
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeAdsterra);
+    } else {
+      initializeAdsterra();
+    }
+  }, []);
 
   const playlists = initialContent.playlists;
   const xtreamCodes = initialContent.xtreamCodes;
@@ -393,7 +453,7 @@ export default function HomePageClient({
                     </button>
                   </article>
                 ))}
-              </div>
+</div>
             </section>
           )}
 
@@ -481,6 +541,17 @@ export default function HomePageClient({
             </section>
           )}
 
+          <div className="my-8 text-center">
+            <ins
+              className="adsbygoogle"
+              style={{ display: 'block', minHeight: '120px' }}
+              data-ad-client="ca-pub-6216012186493058"
+              data-ad-slot="1234567892"
+              data-ad-format="fluid"
+              data-full-width-responsive="true"
+            ></ins>
+          </div>
+
           {showMacPortals && macPortals.length > 0 && (
             <section>
               <div className="mb-6 flex items-end justify-between gap-4">
@@ -547,6 +618,17 @@ export default function HomePageClient({
             </section>
           )}
 
+          <div className="my-8 text-center">
+            <ins
+              className="adsbygoogle"
+              style={{ display: 'block', minHeight: '120px' }}
+              data-ad-client="ca-pub-6216012186493058"
+              data-ad-slot="1234567893"
+              data-ad-format="fluid"
+              data-full-width-responsive="true"
+            ></ins>
+          </div>
+
           {showApps && appItems.length > 0 && (
             <section>
               <div className="mb-6 flex items-end justify-between gap-4">
@@ -608,8 +690,8 @@ export default function HomePageClient({
 
       <footer className="mt-16 border-t border-slate-700 bg-slate-900/95">
         <div className="container mx-auto px-4 py-8">
-          <div className="mb-8 rounded border border-slate-700 bg-slate-800/50 p-4">
-            <p className="text-sm text-slate-500">Espace publicitaire</p>
+          <div className="mb-8 rounded border border-slate-700 bg-slate-800/50 p-4 text-center">
+            <div id="adsterra-home-footer-banner"></div>
           </div>
           <div className="text-center text-sm text-slate-400">
             <p>© 2026 Ngori - Partager et decouvrir du contenu</p>

@@ -28,10 +28,12 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
-        {/* Google AdSense - Replace with your own ID */}
+        <meta name="google-adsense-account" content="ca-pub-6216012186493058" />
         <script
           async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-xxxxxxxxxxxxxxxx"
+          src="https://cdn.adsterra.com/core.min.js"
+          data-api-key="c7a6e431481df2441d81515a7587c294"
+          type="text/javascript"
           crossOrigin="anonymous"
         ></script>
       </head>
