@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 
 const VISITOR_FLAG = 'ngori_visited';
@@ -44,22 +45,32 @@ type BaseContentItem = {
 };
 
 export type PlaylistItem = BaseContentItem & {
+  category?: string;
   content: string;
+  downloads?: number;
+  logo?: string;
   title: string;
+  updatedAt?: string;
 };
 
 export type XtreamItem = BaseContentItem & {
+  category?: string;
+  expirationDate?: string;
   password: string;
   serverUrl: string;
   title: string;
+  updatedAt?: string;
   username: string;
 };
 
 export type MacPortalItem = BaseContentItem & {
+  category?: string;
+  logo?: string;
   macAddress?: string;
   macIdentifier?: string;
   portalUrl: string;
   title: string;
+  updatedAt?: string;
 };
 
 export type PublicAppItem = BaseContentItem & {
@@ -384,41 +395,7 @@ export default function HomePageClient({
     setNotice({ message, tone });
   };
 
-  const downloadPlaylist = (playlist: PlaylistItem) => {
-    try {
-      const fileName = `${slugify(playlist.title || 'playlist') || 'playlist'}.m3u`;
-      const blob = new Blob([playlist.content], { type: 'audio/x-mpegurl;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(url);
-      showNotice('Le telechargement de la playlist a commence.', 'success');
-    } catch (error) {
-      console.error('Erreur de telechargement:', error);
-      showNotice('Impossible de telecharger cette playlist.', 'error');
-    }
-  };
 
-  const copyXtreamDetails = async (item: XtreamItem) => {
-    const details = [
-      `Titre: ${item.title}`,
-      `Serveur: ${item.serverUrl}`,
-      `Utilisateur: ${item.username}`,
-      `Mot de passe: ${item.password}`,
-    ].join('\n');
-
-    try {
-      await navigator.clipboard.writeText(details);
-      showNotice('Les informations Xtream ont ete copiees.', 'success');
-    } catch (error) {
-      console.error('Erreur de copie:', error);
-      showNotice('Impossible de copier les informations Xtream.', 'error');
-    }
-  };
 
   const showPlaylists = activeView === 'all' || activeView === 'playlists';
   const showXtream = activeView === 'all' || activeView === 'xtreamCodes';
@@ -563,50 +540,59 @@ export default function HomePageClient({
               </div>
 
               <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
-                {recentFeed.slice(0, 8).map((item) => (
-                  <article
-                    key={`${item.type}-${item.id}`}
-                    className="rounded-xl border border-slate-700 bg-slate-800/50 p-3.5 sm:p-4 md:p-5 backdrop-blur transition hover:border-cyan-500/70 hover:shadow-lg hover:shadow-cyan-500/5"
-                  >
-                    <div className="mb-2 flex items-center justify-between gap-2">
-                      <span className="rounded-full bg-cyan-500/15 px-2 py-0.5 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.15em] sm:tracking-[0.2em] text-cyan-200">
-                        {item.typeLabel}
-                      </span>
-                      <span className="text-[10px] sm:text-xs text-slate-400 flex-shrink-0">
-                        {formatDate(item.createdAt)}
-                      </span>
-                    </div>
-                    <h4 className="text-base sm:text-lg md:text-xl font-semibold text-white leading-snug">{item.title}</h4>
-                    <p className="mt-1 text-xs sm:text-sm text-slate-300 line-clamp-2">{item.description}</p>
-                    {item.type === 'playlists' && item.rawData && (
-                      <p className="mt-2 text-xs text-slate-400 line-clamp-2">
-                        {(item.rawData as PlaylistItem).content?.slice(0, 120)}...
-                      </p>
-                    )}
-                    {item.type === 'xtreamCodes' && item.rawData && (
-                      <div className="mt-2 text-[10px] sm:text-xs text-slate-500 font-mono space-y-0.5">
-                        <p className="truncate">{(item.rawData as XtreamItem).serverUrl}</p>
-                        <p>{(item.rawData as XtreamItem).username}</p>
-                      </div>
-                    )}
-                    {item.type === 'macPortals' && item.rawData && (item.rawData as MacPortalItem).macAddress && (
-                      <p className="mt-2 text-[10px] sm:text-xs font-mono text-cyan-400">
-                        MAC: {(item.rawData as MacPortalItem).macAddress}
-                      </p>
-                    )}
-                    {item.type === 'appItems' && item.rawData && (
-                      <p className="mt-2 text-xs text-slate-400">
-                        {(item.rawData as PublicAppItem).version || 'v1.0.0'} - {(item.rawData as PublicAppItem).fileSize || 'Taille N/A'}
-                      </p>
-                    )}
-                    <button
-                      onClick={() => goToView(item.type)}
-                      className="mt-3 sm:mt-4 rounded-lg bg-slate-900/80 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-cyan-200 transition hover:bg-slate-700 active:scale-95"
+                {recentFeed.slice(0, 8).map((item) => {
+                  const detailHref =
+                    item.type === 'playlists'
+                      ? `/playlist/${item.id}`
+                      : item.type === 'xtreamCodes'
+                        ? `/xtream/${item.id}`
+                        : item.type === 'macPortals'
+                          ? `/mac-portal/${item.id}`
+                          : null;
+
+                  return (
+                    <Link
+                      key={`${item.type}-${item.id}`}
+                      href={detailHref || '/'}
+                      className="block rounded-xl border border-slate-700 bg-slate-800/50 p-3.5 sm:p-4 md:p-5 backdrop-blur transition hover:border-cyan-500/70 hover:shadow-lg hover:shadow-cyan-500/5"
                     >
-                      Voir cette categorie
-                    </button>
-                  </article>
-                ))}
+                      <div className="mb-2 flex items-center justify-between gap-2">
+                        <span className="rounded-full bg-cyan-500/15 px-2 py-0.5 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.15em] sm:tracking-[0.2em] text-cyan-200">
+                          {item.typeLabel}
+                        </span>
+                        <span className="text-[10px] sm:text-xs text-slate-400 flex-shrink-0">
+                          {formatDate(item.createdAt)}
+                        </span>
+                      </div>
+                      <h4 className="text-base sm:text-lg md:text-xl font-semibold text-white leading-snug">{item.title}</h4>
+                      <p className="mt-1 text-xs sm:text-sm text-slate-300 line-clamp-2">{item.description}</p>
+                      {item.type === 'playlists' && item.rawData && (
+                        <p className="mt-2 text-xs text-slate-400 line-clamp-2">
+                          {(item.rawData as PlaylistItem).content?.slice(0, 120)}...
+                        </p>
+                      )}
+                      {item.type === 'xtreamCodes' && item.rawData && (
+                        <div className="mt-2 text-[10px] sm:text-xs text-slate-500 font-mono space-y-0.5">
+                          <p className="truncate">{(item.rawData as XtreamItem).serverUrl}</p>
+                          <p>{(item.rawData as XtreamItem).username}</p>
+                        </div>
+                      )}
+                      {item.type === 'macPortals' && item.rawData && (item.rawData as MacPortalItem).macAddress && (
+                        <p className="mt-2 text-[10px] sm:text-xs font-mono text-cyan-400">
+                          MAC: {(item.rawData as MacPortalItem).macAddress}
+                        </p>
+                      )}
+                      {item.type === 'appItems' && item.rawData && (
+                        <p className="mt-2 text-xs text-slate-400">
+                          {(item.rawData as PublicAppItem).version || 'v1.0.0'} - {(item.rawData as PublicAppItem).fileSize || 'Taille N/A'}
+                        </p>
+                      )}
+                      <span className="mt-3 sm:mt-4 inline-block rounded-lg bg-slate-900/80 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-cyan-200 transition hover:bg-slate-700">
+                        Voir les details
+                      </span>
+                    </Link>
+                  );
+                })}
               </div>
             </section>
           )}
@@ -624,9 +610,10 @@ export default function HomePageClient({
 
               <div className="grid grid-cols-1 gap-3 sm:gap-4 md:gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {playlists.map((playlist) => (
-                  <article
+                  <Link
                     key={playlist._id}
-                    className="rounded-xl border border-slate-700 bg-slate-800/50 p-3.5 sm:p-4 md:p-6 backdrop-blur transition hover:border-blue-500/70 hover:shadow-lg hover:shadow-blue-500/5"
+                    href={`/playlist/${playlist._id}`}
+                    className="block rounded-xl border border-slate-700 bg-slate-800/50 p-3.5 sm:p-4 md:p-6 backdrop-blur transition hover:border-blue-500/70 hover:shadow-lg hover:shadow-blue-500/5"
                   >
                     <div className="mb-2 sm:mb-3 flex items-start justify-between gap-2">
                       <h4 className="text-base sm:text-lg md:text-xl font-semibold leading-snug">{playlist.title}</h4>
@@ -637,13 +624,10 @@ export default function HomePageClient({
                     <p className="mb-3 sm:mb-4 text-xs sm:text-sm text-slate-300 line-clamp-2">
                       {playlist.description || 'Playlist disponible au telechargement'}
                     </p>
-                    <button
-                      onClick={() => downloadPlaylist(playlist)}
-                      className="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium transition hover:bg-blue-700 active:scale-[0.98]"
-                    >
-                      Telecharger la playlist
-                    </button>
-                  </article>
+                    <span className="block w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-center transition hover:bg-blue-700">
+                      Voir les details
+                    </span>
+                  </Link>
                 ))}
               </div>
             </section>
@@ -662,9 +646,10 @@ export default function HomePageClient({
 
               <div className="grid grid-cols-1 gap-3 sm:gap-4 md:gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {xtreamCodes.map((code) => (
-                  <article
+                  <Link
                     key={code._id}
-                    className="rounded-xl border border-slate-700 bg-slate-800/50 p-3.5 sm:p-4 md:p-6 backdrop-blur transition hover:border-green-500/70 hover:shadow-lg hover:shadow-green-500/5"
+                    href={`/xtream/${code._id}`}
+                    className="block rounded-xl border border-slate-700 bg-slate-800/50 p-3.5 sm:p-4 md:p-6 backdrop-blur transition hover:border-green-500/70 hover:shadow-lg hover:shadow-green-500/5"
                   >
                     <div className="mb-2 sm:mb-3 flex items-start justify-between gap-2">
                       <h4 className="text-base sm:text-lg md:text-xl font-semibold leading-snug">{code.title}</h4>
@@ -683,13 +668,10 @@ export default function HomePageClient({
                         <span className="font-semibold">Utilisateur:</span> {code.username}
                       </p>
                     </div>
-                    <button
-                      onClick={() => void copyXtreamDetails(code)}
-                      className="w-full rounded-lg bg-green-600 px-4 py-2 text-sm font-medium transition hover:bg-green-700 active:scale-[0.98]"
-                    >
-                      Copier les informations
-                    </button>
-                  </article>
+                    <span className="block w-full rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-center transition hover:bg-green-700">
+                      Voir les details
+                    </span>
+                  </Link>
                 ))}
               </div>
             </section>
@@ -722,9 +704,10 @@ export default function HomePageClient({
 
               <div className="grid grid-cols-1 gap-3 sm:gap-4 md:gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {macPortals.map((portal) => (
-                  <article
+                  <Link
                     key={portal._id}
-                    className="rounded-xl border border-slate-700 bg-slate-800/50 p-3.5 sm:p-4 md:p-6 backdrop-blur transition hover:border-orange-500/70 hover:shadow-lg hover:shadow-orange-500/5"
+                    href={`/mac-portal/${portal._id}`}
+                    className="block rounded-xl border border-slate-700 bg-slate-800/50 p-3.5 sm:p-4 md:p-6 backdrop-blur transition hover:border-orange-500/70 hover:shadow-lg hover:shadow-orange-500/5"
                   >
                     <div className="mb-2 sm:mb-3 flex items-start justify-between gap-2">
                       <h4 className="text-base sm:text-lg md:text-xl font-semibold leading-snug">{portal.title}</h4>
@@ -747,28 +730,10 @@ export default function HomePageClient({
                         <span className="font-mono text-cyan-300 text-[10px] sm:text-xs">{portal.macIdentifier}</span>
                       </p>
                     )}
-                    <div className="flex gap-2">
-                      {portal.macAddress && (
-                        <button
-                          onClick={() => {
-                            void navigator.clipboard.writeText(portal.macAddress || '');
-                            showNotice('Adresse MAC copiee!', 'success');
-                          }}
-                          className="flex-1 rounded-lg bg-slate-900/80 px-3 py-2 text-xs sm:text-sm text-slate-300 transition hover:bg-slate-700 active:scale-[0.98]"
-                        >
-                          Copier MAC
-                        </button>
-                      )}
-                      <a
-                        href={portal.portalUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1 rounded-lg bg-orange-600 px-3 py-2 text-center text-xs sm:text-sm font-medium text-white transition hover:bg-orange-700 active:scale-[0.98]"
-                      >
-                        Ouvrir
-                      </a>
-                    </div>
-                  </article>
+                    <span className="block w-full rounded-lg bg-orange-600 px-3 py-2 text-center text-xs sm:text-sm font-medium text-white transition hover:bg-orange-700">
+                      Voir les details
+                    </span>
+                  </Link>
                 ))}
               </div>
             </section>
