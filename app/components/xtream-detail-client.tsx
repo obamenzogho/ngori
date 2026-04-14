@@ -112,22 +112,24 @@ export default function XtreamDetailClient({ xtream }: { xtream: XtreamDetail })
         <article className="rounded-2xl border border-slate-700 bg-slate-800/50 backdrop-blur overflow-hidden">
           <div className="p-4 sm:p-6 md:p-8">
             {/* Category + Status badges */}
-            <div className="flex flex-wrap items-center gap-2 mb-3">
-              {xtream.category && (
-                <span className="inline-block rounded-full bg-green-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-green-200">
-                  {xtream.category}
-                </span>
-              )}
-              {xtream.expirationDate && (
-                <span className={`inline-block rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider ${
-                  isExpired
-                    ? 'bg-red-500/15 text-red-200'
-                    : 'bg-emerald-500/15 text-emerald-200'
-                }`}>
-                  {isExpired ? 'Expire' : 'Actif'}
-                </span>
-              )}
-            </div>
+            {(xtream.category || xtream.expirationDate) && (
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                {xtream.category && (
+                  <span className="inline-block rounded-full bg-green-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-green-200">
+                    {xtream.category}
+                  </span>
+                )}
+                {xtream.expirationDate && (
+                  <span className={`inline-block rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider ${
+                    isExpired
+                      ? 'bg-red-500/15 text-red-200'
+                      : 'bg-emerald-500/15 text-emerald-200'
+                  }`}>
+                    {isExpired ? 'Expire' : 'Actif'}
+                  </span>
+                )}
+              </div>
+            )}
 
             {/* Title */}
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white leading-tight">
