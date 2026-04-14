@@ -11,6 +11,10 @@ import MacPortal from '@/lib/models/MacPortal';
 import Playlist from '@/lib/models/Playlist';
 import XtreamCode from '@/lib/models/XtreamCode';
 
+// Force dynamic rendering — always fetch fresh data from the database
+// so that admin deletions are reflected immediately on the home page.
+export const dynamic = 'force-dynamic';
+
 function serializeItems<T extends { _id: unknown; createdAt?: unknown; updatedAt?: unknown }>(
   items: T[]
 ) {

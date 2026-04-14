@@ -152,8 +152,44 @@ export default function HomePageClient({
   const [notice, setNotice] = useState<Notice | null>(null);
   const [hasVisitedBefore, setHasVisitedBefore] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [content, setContent] = useState<ContentResponse>(initialContent);
   const hasVisitedClient = useHasVisited();
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Revalidate content when the page regains focus (tab switch, back navigation)
+  // so that admin deletions/additions are reflected immediately.
+  useEffect(() => {
+    let stale = false;
+
+    async function revalidate() {
+      try {
+        const res = await fetch('/api/content');
+        if (res.ok) {
+          const fresh: ContentResponse = await res.json();
+          if (!stale) setContent(fresh);
+        }
+      } catch {
+        // network error — keep existing content
+      }
+    }
+
+    function onVisibilityChange() {
+      if (document.visibilityState === 'visible') revalidate();
+    }
+
+    function onFocus() {
+      revalidate();
+    }
+
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    window.addEventListener('focus', onFocus);
+
+    return () => {
+      stale = true;
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, []);
 
   useEffect(() => {
     if (!notice) {
@@ -278,10 +314,10 @@ export default function HomePageClient({
     };
   }, [pushAdSenseAds]);
 
-  const playlists = initialContent.playlists;
-  const xtreamCodes = initialContent.xtreamCodes;
-  const macPortals = initialContent.macPortals;
-  const appItems = initialContent.appItems;
+  const playlists = content.playlists;
+  const xtreamCodes = content.xtreamCodes;
+  const macPortals = content.macPortals;
+  const appItems = content.appItems;
 
   const recentFeed = useMemo<FeedItem[]>(
     () =>

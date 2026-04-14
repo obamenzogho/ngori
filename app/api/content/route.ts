@@ -5,6 +5,9 @@ import MacPortal from '@/lib/models/MacPortal';
 import AppItem from '@/lib/models/AppItem';
 import { NextResponse } from 'next/server';
 
+// Always serve fresh data — admin deletions must be reflected immediately.
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     await connectDB();
