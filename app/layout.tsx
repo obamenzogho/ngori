@@ -29,11 +29,10 @@ export default function RootLayout({
     >
       <head>
         <meta name="google-adsense-account" content="ca-pub-6216012186493058" />
-        {/* Google AdSense */}
+        {/* Google AdSense — no crossOrigin to avoid CORS issues on mobile Safari */}
         <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6216012186493058"
-          crossOrigin="anonymous"
         ></script>
         {/* Adsterra Core */}
         <script

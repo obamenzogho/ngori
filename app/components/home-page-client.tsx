@@ -205,37 +205,62 @@ export default function HomePageClient({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Helper: push AdSense ads with retry for mobile browsers
+  const pushAdSenseAds = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const ads = document.querySelectorAll('.adsbygoogle');
+      ads.forEach(() => {
+        try {
+          (window.adsbygoogle = window.adsbygoogle || []).push({});
+        } catch {
+          // individual push failure — ignore
+        }
+      });
+    } catch {
+      // AdSense not available
+    }
+  }, []);
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Initialize AdSense ads
-    try {
-      (window.adsbygoogle = window.adsbygoogle || []).push({});
-    } catch {
-      // AdSense not loaded yet
-    }
+    // Push AdSense for each <ins> element (with retry for slow mobile connections)
+    pushAdSenseAds();
+    const retryTimer = setTimeout(pushAdSenseAds, 2000);
+    const retryTimer2 = setTimeout(pushAdSenseAds, 5000);
 
     // Configure atOptions for banner (responsive - adapts to screen size)
-    const isWideScreen = window.innerWidth >= 728;
-    window.atOptions = {
-      key: '3c1573cf88699be69e51c3767ebdd818',
-      format: 'iframe',
-      height: isWideScreen ? 90 : 50,
-      width: isWideScreen ? 728 : 320,
-      params: {},
+    const updateAtOptions = () => {
+      const isWideScreen = window.innerWidth >= 728;
+      window.atOptions = {
+        key: '3c1573cf88699be69e51c3767ebdd818',
+        format: 'iframe',
+        height: isWideScreen ? 90 : 50,
+        width: isWideScreen ? 728 : 320,
+        params: {},
+      };
     };
+    updateAtOptions();
 
-    const bannerScript = document.createElement('script');
-    bannerScript.src = 'https://www.highperformanceformat.com/3c1573cf88699be69e51c3767ebdd818/invoke.js';
-    bannerScript.async = true;
-    document.body.appendChild(bannerScript);
+    // Load banner script only after the container exists in the DOM
+    const bannerContainer = document.getElementById('banner-728x90');
+    if (bannerContainer) {
+      const bannerScript = document.createElement('script');
+      bannerScript.src = 'https://www.highperformanceformat.com/3c1573cf88699be69e51c3767ebdd818/invoke.js';
+      bannerScript.async = true;
+      bannerContainer.appendChild(bannerScript);
+    }
 
-    // Load native banner script
-    const nativeScript = document.createElement('script');
-    nativeScript.async = true;
-    nativeScript.setAttribute('data-cfasync', 'false');
-    nativeScript.src = 'https://pl29139985.profitablecpmratenetwork.com/3b8b394af5e5faeda0898b04416b8c81/invoke.js';
-    document.body.appendChild(nativeScript);
+    // Load native banner script only after its container exists
+    const nativeContainer = document.getElementById('container-3b8b394af5e5faeda0898b04416b8c81');
+    if (nativeContainer) {
+      const nativeScript = document.createElement('script');
+      nativeScript.async = true;
+      nativeScript.setAttribute('data-cfasync', 'false');
+      nativeScript.src = 'https://pl29139985.profitablecpmratenetwork.com/3b8b394af5e5faeda0898b04416b8c81/invoke.js';
+      nativeContainer.appendChild(nativeScript);
+    }
 
     // Configure Adsterra placements
     if (typeof window._atws !== 'object') {
@@ -248,9 +273,10 @@ export default function HomePageClient({
     });
 
     return () => {
-      // Cleanup handled by React
+      clearTimeout(retryTimer);
+      clearTimeout(retryTimer2);
     };
-  }, []);
+  }, [pushAdSenseAds]);
 
   const playlists = initialContent.playlists;
   const xtreamCodes = initialContent.xtreamCodes;
@@ -638,7 +664,7 @@ export default function HomePageClient({
             <div className="mx-auto max-w-4xl px-2 sm:px-4">
               <ins
                 className="adsbygoogle"
-                style={{ display: 'block', minHeight: '90px' }}
+                style={{ display: 'block', width: '100%', minHeight: '50px' }}
                 data-ad-client="ca-pub-6216012186493058"
                 data-ad-slot="1234567892"
                 data-ad-format="auto"
@@ -717,7 +743,7 @@ export default function HomePageClient({
             <div className="mx-auto max-w-4xl px-2 sm:px-4">
               <ins
                 className="adsbygoogle"
-                style={{ display: 'block', minHeight: '90px' }}
+                style={{ display: 'block', width: '100%', minHeight: '50px' }}
                 data-ad-client="ca-pub-6216012186493058"
                 data-ad-slot="1234567893"
                 data-ad-format="auto"
