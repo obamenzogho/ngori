@@ -215,21 +215,20 @@ export default function HomePageClient({
       // AdSense not loaded yet
     }
 
-    // Configure atOptions for 728x90 banner (only on wider screens)
-    if (window.innerWidth >= 728) {
-      window.atOptions = {
-        key: '3c1573cf88699be69e51c3767ebdd818',
-        format: 'iframe',
-        height: 90,
-        width: 728,
-        params: {},
-      };
+    // Configure atOptions for banner (responsive - adapts to screen size)
+    const isWideScreen = window.innerWidth >= 728;
+    window.atOptions = {
+      key: '3c1573cf88699be69e51c3767ebdd818',
+      format: 'iframe',
+      height: isWideScreen ? 90 : 50,
+      width: isWideScreen ? 728 : 320,
+      params: {},
+    };
 
-      const bannerScript = document.createElement('script');
-      bannerScript.src = 'https://www.highperformanceformat.com/3c1573cf88699be69e51c3767ebdd818/invoke.js';
-      bannerScript.async = true;
-      document.body.appendChild(bannerScript);
-    }
+    const bannerScript = document.createElement('script');
+    bannerScript.src = 'https://www.highperformanceformat.com/3c1573cf88699be69e51c3767ebdd818/invoke.js';
+    bannerScript.async = true;
+    document.body.appendChild(bannerScript);
 
     // Load native banner script
     const nativeScript = document.createElement('script');
