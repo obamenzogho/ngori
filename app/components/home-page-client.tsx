@@ -1,12 +1,20 @@
 'use client';
 
-import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 
 const VISITOR_FLAG = 'ngori_visited';
 
 declare global {
   interface Window {
+    adsbygoogle?: unknown[];
     _atws?: { _a_: { placementId: number; target: string; id: string }[] };
+    atOptions?: {
+      key: string;
+      format: string;
+      height: number;
+      width: number;
+      params: Record<string, unknown>;
+    };
   }
 }
 
@@ -83,12 +91,12 @@ type Notice = {
   tone: 'error' | 'success';
 };
 
-const NAV_ITEMS: Array<{ id: ContentView; label: string }> = [
-  { id: 'all', label: 'Actualites' },
-  { id: 'playlists', label: 'M3U' },
-  { id: 'xtreamCodes', label: 'Xtream' },
-  { id: 'macPortals', label: 'Mac Portal' },
-  { id: 'appItems', label: 'Applications' },
+const NAV_ITEMS: Array<{ id: ContentView; label: string; icon: string }> = [
+  { id: 'all', label: 'Actualites', icon: '📰' },
+  { id: 'playlists', label: 'M3U', icon: '🎵' },
+  { id: 'xtreamCodes', label: 'Xtream', icon: '📡' },
+  { id: 'macPortals', label: 'Mac Portal', icon: '🖥️' },
+  { id: 'appItems', label: 'Applications', icon: '📱' },
 ];
 
 function slugify(value: string) {
@@ -143,7 +151,9 @@ export default function HomePageClient({
   const [activeView, setActiveView] = useState<ContentView>('all');
   const [notice, setNotice] = useState<Notice | null>(null);
   const [hasVisitedBefore, setHasVisitedBefore] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const hasVisitedClient = useHasVisited();
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!notice) {
@@ -167,59 +177,79 @@ export default function HomePageClient({
         // localStorage not available
       }
     }
-}, [hasVisitedClient]);
+  }, [hasVisitedClient]);
+
+  // Close mobile menu on outside click
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMobileMenuOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [mobileMenuOpen]);
+
+  // Close mobile menu on resize to desktop
+  useEffect(() => {
+    function handleResize() {
+      if (window.innerWidth >= 768) {
+        setMobileMenuOpen(false);
+      }
+    }
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Load banner 728x90
-    const bannerScript = document.createElement('script');
-    bannerScript.src = 'https://www.highperformanceformat.com/3c1573cf88699be69e51c3767ebdd818/invoke.js';
-    document.body.appendChild(bannerScript);
+    // Initialize AdSense ads
+    try {
+      (window.adsbygoogle = window.adsbygoogle || []).push({});
+    } catch {
+      // AdSense not loaded yet
+    }
 
-    // Inject atOptions globally
-    (window as Window & { atOptions?: object }).atOptions = {
-      'key': '3c1573cf88699be69e51c3767ebdd818',
-      'format': 'iframe',
-      'height': 90,
-      'width': 728,
-      'params': {}
-    };
+    // Configure atOptions for 728x90 banner (only on wider screens)
+    if (window.innerWidth >= 728) {
+      window.atOptions = {
+        key: '3c1573cf88699be69e51c3767ebdd818',
+        format: 'iframe',
+        height: 90,
+        width: 728,
+        params: {},
+      };
 
-    // Load Adsterra native banner script
+      const bannerScript = document.createElement('script');
+      bannerScript.src = 'https://www.highperformanceformat.com/3c1573cf88699be69e51c3767ebdd818/invoke.js';
+      bannerScript.async = true;
+      document.body.appendChild(bannerScript);
+    }
+
+    // Load native banner script
     const nativeScript = document.createElement('script');
     nativeScript.async = true;
     nativeScript.setAttribute('data-cfasync', 'false');
     nativeScript.src = 'https://pl29139985.profitablecpmratenetwork.com/3b8b394af5e5faeda0898b04416b8c81/invoke.js';
     document.body.appendChild(nativeScript);
 
-    // Load Adsterra core and footer banner
-    if (typeof (window as Window & { _atws?: unknown })._atws !== 'object') {
-      (window as Window & { _atws?: { _a_ : { placementId: number; target: string; id: string }[] } })._atws = { _a_: [] };
+    // Configure Adsterra placements
+    if (typeof window._atws !== 'object') {
+      window._atws = { _a_: [] };
     }
-
-    const coreScript = document.createElement('script');
-    coreScript.async = true;
-    coreScript.src = 'https://cdn.adsterra.com/core.min.js';
-    coreScript.setAttribute('data-api-key', process.env.NEXT_PUBLIC_ADSTERRA_API_KEY || '');
-    coreScript.crossOrigin = 'anonymous';
-    
-    coreScript.onload = () => {
-      if (typeof (window as Window & { _atws?: unknown })._atws === 'object' && (window as Window & { _atws?: { _a_: { placementId: number; target: string; id: string }[] } })._atws?._a_) {
-        (window as Window & { _atws?: { _a_: { placementId: number; target: string; id: string }[] } })._atws!._a_.push({ 
-          placementId: 3248886, 
-          target: "_blank",
-          id: "adsterra-home-footer-banner"
-        });
-      }
-    };
-
-    document.body.appendChild(coreScript);
+    window._atws._a_.push({
+      placementId: 3248886,
+      target: '_blank',
+      id: 'adsterra-home-footer-banner',
+    });
 
     return () => {
-      if (bannerScript.parentNode) bannerScript.parentNode.removeChild(bannerScript);
-      if (nativeScript.parentNode) nativeScript.parentNode.removeChild(nativeScript);
-      if (coreScript.parentNode) coreScript.parentNode.removeChild(coreScript);
+      // Cleanup handled by React
     };
   }, []);
 
@@ -281,10 +311,13 @@ export default function HomePageClient({
     macPortals.length > 0 ||
     appItems.length > 0;
 
-  const goToView = (view: ContentView) => {
+  const goToView = useCallback((view: ContentView) => {
     setActiveView(view);
-    document.getElementById('content-zone')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
+    setMobileMenuOpen(false);
+    setTimeout(() => {
+      document.getElementById('content-zone')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  }, []);
 
   const showNotice = (message: string, tone: Notice['tone']) => {
     setNotice({ message, tone });
@@ -333,60 +366,112 @@ export default function HomePageClient({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <header className="sticky top-0 z-50 border-b border-slate-700 bg-slate-900/95 backdrop-blur">
-        <div className="container mx-auto px-4 py-3 md:py-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center justify-between gap-4">
-              <h1 className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-2xl md:text-3xl font-bold text-transparent">
+      {/* ─── HEADER / NAV ─── */}
+      <header className="sticky top-0 z-50 border-b border-slate-700/80 bg-slate-900/95 backdrop-blur-md">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-14 sm:h-16 items-center justify-between">
+            {/* Logo */}
+            <div className="flex-shrink-0">
+              <h1 className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-xl sm:text-2xl lg:text-3xl font-bold text-transparent select-none">
                 Ngori
               </h1>
             </div>
 
-            <nav className="flex flex-wrap gap-1.5 md:gap-2 max-w-full overflow-x-auto pb-2 sm:pb-0">
+            {/* Desktop nav */}
+            <nav className="hidden md:flex items-center gap-1 lg:gap-2">
               {NAV_ITEMS.map((item) => (
                 <button
                   key={item.id}
                   onClick={() => goToView(item.id)}
-                  className={`whitespace-nowrap rounded-full px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-semibold transition ${
+                  className={`whitespace-nowrap rounded-full px-3 lg:px-4 py-1.5 lg:py-2 text-xs lg:text-sm font-semibold transition-all duration-200 ${
                     activeView === item.id
-                      ? 'bg-cyan-500 text-slate-950'
-                      : 'bg-slate-800 text-slate-200 hover:bg-slate-700'
+                      ? 'bg-cyan-500 text-slate-950 shadow-lg shadow-cyan-500/25'
+                      : 'bg-slate-800 text-slate-200 hover:bg-slate-700 hover:text-white'
                   }`}
                 >
                   {item.label}
                 </button>
               ))}
             </nav>
+
+            {/* Mobile hamburger */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden relative z-50 p-2 -mr-2 text-slate-200 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+              aria-label={mobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                {mobileMenuOpen ? (
+                  <>
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </>
+                ) : (
+                  <>
+                    <line x1="3" y1="6" x2="21" y2="6" />
+                    <line x1="3" y1="12" x2="21" y2="12" />
+                    <line x1="3" y1="18" x2="21" y2="18" />
+                  </>
+                )}
+              </svg>
+            </button>
           </div>
+        </div>
+
+        {/* Mobile dropdown menu */}
+        <div
+          ref={menuRef}
+          className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+            mobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+          }`}
+        >
+          <nav className="px-4 pb-4 pt-2 space-y-1 border-t border-slate-700/50 bg-slate-900/98 backdrop-blur-md">
+            {NAV_ITEMS.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => goToView(item.id)}
+                className={`w-full flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200 ${
+                  activeView === item.id
+                    ? 'bg-cyan-500 text-slate-950 shadow-lg shadow-cyan-500/25'
+                    : 'bg-slate-800/60 text-slate-200 hover:bg-slate-700 hover:text-white'
+                }`}
+              >
+                <span className="text-lg">{item.icon}</span>
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </nav>
         </div>
       </header>
 
-      <div className="w-full py-3 md:py-4 flex justify-center overflow-x-auto border-b border-slate-800 bg-slate-900/50">
-        <div className="min-w-[320px] sm:min-w-auto max-w-[728px] mx-auto">
-          <div id="banner-728x90"></div>
+      {/* ─── AD BANNER (responsive) ─── */}
+      <div className="w-full py-2 sm:py-3 md:py-4 flex justify-center border-b border-slate-800/50 bg-slate-900/30">
+        <div className="w-full max-w-[728px] mx-auto px-2 sm:px-4">
+          <div id="banner-728x90" className="min-h-[50px] sm:min-h-[90px]"></div>
         </div>
       </div>
 
-      <main className="container mx-auto px-3 md:px-4 py-8 md:py-12">
+      {/* ─── MAIN CONTENT ─── */}
+      <main className="mx-auto max-w-7xl px-3 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-8 md:py-12">
+        {/* Welcome section */}
         {!hasVisitedBefore && (
-          <section className="mb-8 md:mb-12 grid gap-6 md:gap-8 lg:grid-cols-[1.3fr_0.9fr] lg:items-center">
-            <div>
-              <h2 className="mb-3 md:mb-4 text-2xl md:text-3xl lg:text-4xl font-bold md:text-5xl">
+          <section className="mb-6 sm:mb-8 md:mb-12">
+            <div className="max-w-2xl">
+              <h2 className="mb-2 sm:mb-3 md:mb-4 text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold">
                 Bienvenue sur Ngori
               </h2>
-              <p className="max-w-2xl text-base md:text-lg text-slate-300">
+              <p className="text-sm sm:text-base md:text-lg text-slate-300 leading-relaxed">
                 Decouvrez les derniers contenus IPTV ajoutes : playlists M3U, acces Xtream,
                 portails Mac et applications. Filtrez par categorie en un clic.
               </p>
             </div>
-
-            
           </section>
         )}
 
+        {/* Notice */}
         {notice && (
           <div
-            className={`mb-6 rounded-lg border px-4 py-3 text-sm ${
+            className={`mb-4 sm:mb-6 rounded-lg border px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm ${
               notice.tone === 'success'
                 ? 'border-emerald-500/60 bg-emerald-500/10 text-emerald-100'
                 : 'border-red-500/60 bg-red-500/10 text-red-100'
@@ -396,101 +481,104 @@ export default function HomePageClient({
           </div>
         )}
 
+        {/* Load error */}
         {loadError && (
-          <div className="mb-6 rounded-lg border border-amber-500/60 bg-amber-500/10 px-4 py-3 text-amber-100">
+          <div className="mb-4 sm:mb-6 rounded-lg border border-amber-500/60 bg-amber-500/10 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-amber-100">
             {loadError}
           </div>
         )}
 
-        <section id="content-zone" className="space-y-10 md:space-y-16">
+        <section id="content-zone" className="space-y-8 sm:space-y-10 md:space-y-16">
+          {/* ─── RECENT FEED ─── */}
           {activeView === 'all' && recentFeed.length > 0 && (
             <section>
-              <div className="mb-4 md:mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+              <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 sm:gap-3">
                 <div>
-                  <h3 className="mt-2 text-xl md:text-3xl font-bold">Recemment ajoute</h3>
+                  <h3 className="text-lg sm:text-xl md:text-3xl font-bold">Recemment ajoute</h3>
                 </div>
-                <p className="rounded-full bg-slate-800 px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm text-slate-300 self-start sm:self-auto">
+                <p className="rounded-full bg-slate-800 px-3 py-1 text-xs sm:text-sm text-slate-300 self-start sm:self-auto">
                   {recentFeed.length} publication(s)
                 </p>
               </div>
 
-              <div className="grid gap-3 md:gap-4 lg:grid-cols-2">
+              <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
                 {recentFeed.slice(0, 8).map((item) => (
                   <article
                     key={`${item.type}-${item.id}`}
-                    className="rounded-xl md:rounded-2xl border border-slate-700 bg-slate-800/50 p-4 md:p-5 backdrop-blur transition hover:border-cyan-500"
+                    className="rounded-xl border border-slate-700 bg-slate-800/50 p-3.5 sm:p-4 md:p-5 backdrop-blur transition hover:border-cyan-500/70 hover:shadow-lg hover:shadow-cyan-500/5"
                   >
-                    <div className="mb-2 md:mb-3 flex items-center justify-between gap-2 md:gap-3">
-                      <span className="rounded-full bg-cyan-500/15 px-2 md:px-3 py-0.5 md:py-1 text-xs font-semibold uppercase tracking-[0.2em] text-cyan-200">
+                    <div className="mb-2 flex items-center justify-between gap-2">
+                      <span className="rounded-full bg-cyan-500/15 px-2 py-0.5 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.15em] sm:tracking-[0.2em] text-cyan-200">
                         {item.typeLabel}
                       </span>
-                      <span className="text-xs text-slate-400">
+                      <span className="text-[10px] sm:text-xs text-slate-400 flex-shrink-0">
                         {formatDate(item.createdAt)}
                       </span>
                     </div>
-                    <h4 className="text-lg md:text-xl font-semibold text-white">{item.title}</h4>
-                    <p className="mt-1 md:mt-2 text-sm text-slate-300">{item.description}</p>
+                    <h4 className="text-base sm:text-lg md:text-xl font-semibold text-white leading-snug">{item.title}</h4>
+                    <p className="mt-1 text-xs sm:text-sm text-slate-300 line-clamp-2">{item.description}</p>
                     {item.type === 'playlists' && item.rawData && (
-                      <p className="mt-2 text-sm text-slate-400 line-clamp-2">
-                        {(item.rawData as PlaylistItem).content?.slice(0, 150)}...
+                      <p className="mt-2 text-xs text-slate-400 line-clamp-2">
+                        {(item.rawData as PlaylistItem).content?.slice(0, 120)}...
                       </p>
                     )}
                     {item.type === 'xtreamCodes' && item.rawData && (
-                      <div className="mt-2 text-xs text-slate-500 font-mono">
-                        <p>{(item.rawData as XtreamItem).serverUrl}</p>
+                      <div className="mt-2 text-[10px] sm:text-xs text-slate-500 font-mono space-y-0.5">
+                        <p className="truncate">{(item.rawData as XtreamItem).serverUrl}</p>
                         <p>{(item.rawData as XtreamItem).username}</p>
                       </div>
                     )}
                     {item.type === 'macPortals' && item.rawData && (item.rawData as MacPortalItem).macAddress && (
-                      <p className="mt-2 text-xs font-mono text-cyan-400">
+                      <p className="mt-2 text-[10px] sm:text-xs font-mono text-cyan-400">
                         MAC: {(item.rawData as MacPortalItem).macAddress}
                       </p>
                     )}
                     {item.type === 'appItems' && item.rawData && (
-                      <p className="mt-2 text-sm text-slate-400">
+                      <p className="mt-2 text-xs text-slate-400">
                         {(item.rawData as PublicAppItem).version || 'v1.0.0'} - {(item.rawData as PublicAppItem).fileSize || 'Taille N/A'}
                       </p>
                     )}
                     <button
                       onClick={() => goToView(item.type)}
-                      className="mt-4 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-cyan-200 transition hover:bg-slate-700"
+                      className="mt-3 sm:mt-4 rounded-lg bg-slate-900/80 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-cyan-200 transition hover:bg-slate-700 active:scale-95"
                     >
                       Voir cette categorie
                     </button>
                   </article>
                 ))}
-</div>
+              </div>
             </section>
           )}
 
+          {/* ─── PLAYLISTS M3U ─── */}
           {showPlaylists && playlists.length > 0 && (
             <section>
-              <div className="mb-4 md:mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+              <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 sm:gap-3">
                 <div>
-                  <p className="text-sm uppercase tracking-[0.25em] text-blue-300">M3U</p>
-                  <h3 className="mt-1 md:mt-2 text-xl md:text-2xl font-bold">Playlists M3U</h3>
+                  <p className="text-xs sm:text-sm uppercase tracking-[0.2em] sm:tracking-[0.25em] text-blue-300">M3U</p>
+                  <h3 className="mt-1 text-lg sm:text-xl md:text-2xl font-bold">Playlists M3U</h3>
                 </div>
-                <p className="text-sm text-slate-400">{playlists.length} playlist(s)</p>
+                <p className="text-xs sm:text-sm text-slate-400">{playlists.length} playlist(s)</p>
               </div>
 
-              <div className="grid grid-cols-1 gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {playlists.map((playlist) => (
                   <article
                     key={playlist._id}
-                    className="rounded-lg border border-slate-700 bg-slate-800/50 p-4 md:p-6 backdrop-blur transition hover:border-blue-500"
+                    className="rounded-xl border border-slate-700 bg-slate-800/50 p-3.5 sm:p-4 md:p-6 backdrop-blur transition hover:border-blue-500/70 hover:shadow-lg hover:shadow-blue-500/5"
                   >
-                    <div className="mb-2 md:mb-3 flex items-center justify-between gap-2 md:gap-3">
-                      <h4 className="text-lg md:text-xl font-semibold">{playlist.title}</h4>
-                      <span className="text-xs text-slate-400">
+                    <div className="mb-2 sm:mb-3 flex items-start justify-between gap-2">
+                      <h4 className="text-base sm:text-lg md:text-xl font-semibold leading-snug">{playlist.title}</h4>
+                      <span className="text-[10px] sm:text-xs text-slate-400 flex-shrink-0 mt-1">
                         {formatDate(playlist.createdAt)}
                       </span>
                     </div>
-                    <p className="mb-3 md:mb-4 text-slate-300">
+                    <p className="mb-3 sm:mb-4 text-xs sm:text-sm text-slate-300 line-clamp-2">
                       {playlist.description || 'Playlist disponible au telechargement'}
                     </p>
                     <button
                       onClick={() => downloadPlaylist(playlist)}
-                      className="w-full rounded bg-blue-600 px-4 py-2 transition hover:bg-blue-700"
+                      className="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium transition hover:bg-blue-700 active:scale-[0.98]"
                     >
                       Telecharger la playlist
                     </button>
@@ -500,34 +588,33 @@ export default function HomePageClient({
             </section>
           )}
 
+          {/* ─── XTREAM CODES ─── */}
           {showXtream && xtreamCodes.length > 0 && (
             <section>
-              <div className="mb-4 md:mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+              <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 sm:gap-3">
                 <div>
-                  <p className="text-sm uppercase tracking-[0.25em] text-emerald-300">
-                    Xtream
-                  </p>
-                  <h3 className="mt-1 md:mt-2 text-xl md:text-2xl font-bold">Acces Xtream</h3>
+                  <p className="text-xs sm:text-sm uppercase tracking-[0.2em] sm:tracking-[0.25em] text-emerald-300">Xtream</p>
+                  <h3 className="mt-1 text-lg sm:text-xl md:text-2xl font-bold">Acces Xtream</h3>
                 </div>
-                <p className="text-sm text-slate-400">{xtreamCodes.length} acces</p>
+                <p className="text-xs sm:text-sm text-slate-400">{xtreamCodes.length} acces</p>
               </div>
 
-              <div className="grid grid-cols-1 gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {xtreamCodes.map((code) => (
                   <article
                     key={code._id}
-                    className="rounded-lg border border-slate-700 bg-slate-800/50 p-4 md:p-6 backdrop-blur transition hover:border-green-500"
+                    className="rounded-xl border border-slate-700 bg-slate-800/50 p-3.5 sm:p-4 md:p-6 backdrop-blur transition hover:border-green-500/70 hover:shadow-lg hover:shadow-green-500/5"
                   >
-                    <div className="mb-2 md:mb-3 flex items-center justify-between gap-2 md:gap-3">
-                      <h4 className="text-lg md:text-xl font-semibold">{code.title}</h4>
-                      <span className="text-xs text-slate-400">
+                    <div className="mb-2 sm:mb-3 flex items-start justify-between gap-2">
+                      <h4 className="text-base sm:text-lg md:text-xl font-semibold leading-snug">{code.title}</h4>
+                      <span className="text-[10px] sm:text-xs text-slate-400 flex-shrink-0 mt-1">
                         {formatDate(code.createdAt)}
                       </span>
                     </div>
-                    <p className="mb-3 md:mb-4 text-slate-300">
+                    <p className="mb-3 sm:mb-4 text-xs sm:text-sm text-slate-300 line-clamp-2">
                       {code.description || 'Connexion Xtream disponible'}
                     </p>
-                    <div className="mb-3 md:mb-4 space-y-1 md:space-y-2 text-sm">
+                    <div className="mb-3 sm:mb-4 space-y-1 sm:space-y-2 text-xs sm:text-sm">
                       <p className="truncate">
                         <span className="font-semibold">Serveur:</span> <span className="text-slate-400 break-all">{code.serverUrl}</span>
                       </p>
@@ -537,7 +624,7 @@ export default function HomePageClient({
                     </div>
                     <button
                       onClick={() => void copyXtreamDetails(code)}
-                      className="w-full rounded bg-green-600 px-4 py-2 transition hover:bg-green-700"
+                      className="w-full rounded-lg bg-green-600 px-4 py-2 text-sm font-medium transition hover:bg-green-700 active:scale-[0.98]"
                     >
                       Copier les informations
                     </button>
@@ -547,54 +634,56 @@ export default function HomePageClient({
             </section>
           )}
 
-          <div className="my-8 text-center">
-            <ins
-              className="adsbygoogle"
-              style={{ display: 'block', minHeight: '120px' }}
-              data-ad-client="ca-pub-6216012186493058"
-              data-ad-slot="1234567892"
-              data-ad-format="fluid"
-              data-full-width-responsive="true"
-            ></ins>
+          {/* ─── AD - Fluid ─── */}
+          <div className="my-6 sm:my-8 py-3 sm:py-4 border-y border-slate-700/50">
+            <div className="mx-auto max-w-4xl px-2 sm:px-4">
+              <ins
+                className="adsbygoogle"
+                style={{ display: 'block', minHeight: '90px' }}
+                data-ad-client="ca-pub-6216012186493058"
+                data-ad-slot="1234567892"
+                data-ad-format="auto"
+                data-full-width-responsive="true"
+              ></ins>
+            </div>
           </div>
 
+          {/* ─── MAC PORTALS ─── */}
           {showMacPortals && macPortals.length > 0 && (
             <section>
-              <div className="mb-4 md:mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+              <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 sm:gap-3">
                 <div>
-                  <p className="text-sm uppercase tracking-[0.25em] text-orange-300">
-                    Mac Portal
-                  </p>
-                  <h3 className="mt-1 md:mt-2 text-xl md:text-2xl font-bold">Portails Mac</h3>
+                  <p className="text-xs sm:text-sm uppercase tracking-[0.2em] sm:tracking-[0.25em] text-orange-300">Mac Portal</p>
+                  <h3 className="mt-1 text-lg sm:text-xl md:text-2xl font-bold">Portails Mac</h3>
                 </div>
-                <p className="text-sm text-slate-400">{macPortals.length} portail(x)</p>
+                <p className="text-xs sm:text-sm text-slate-400">{macPortals.length} portail(x)</p>
               </div>
 
-              <div className="grid grid-cols-1 gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {macPortals.map((portal) => (
                   <article
                     key={portal._id}
-                    className="rounded-lg border border-slate-700 bg-slate-800/50 p-4 md:p-6 backdrop-blur transition hover:border-orange-500"
+                    className="rounded-xl border border-slate-700 bg-slate-800/50 p-3.5 sm:p-4 md:p-6 backdrop-blur transition hover:border-orange-500/70 hover:shadow-lg hover:shadow-orange-500/5"
                   >
-                    <div className="mb-2 md:mb-3 flex items-center justify-between gap-2 md:gap-3">
-                      <h4 className="text-lg md:text-xl font-semibold">{portal.title}</h4>
-                      <span className="text-xs text-slate-400">
+                    <div className="mb-2 sm:mb-3 flex items-start justify-between gap-2">
+                      <h4 className="text-base sm:text-lg md:text-xl font-semibold leading-snug">{portal.title}</h4>
+                      <span className="text-[10px] sm:text-xs text-slate-400 flex-shrink-0 mt-1">
                         {formatDate(portal.createdAt)}
                       </span>
                     </div>
-                    <p className="mb-3 md:mb-4 text-slate-300">
+                    <p className="mb-3 sm:mb-4 text-xs sm:text-sm text-slate-300 line-clamp-2">
                       {portal.description || 'Portail disponible'}
                     </p>
                     {portal.macAddress && (
-                      <p className="mb-1 md:mb-2 text-sm">
+                      <p className="mb-1 sm:mb-2 text-xs sm:text-sm">
                         <span className="text-slate-400">MAC: </span>
-                        <span className="font-mono text-cyan-300 text-xs md:text-sm">{portal.macAddress}</span>
+                        <span className="font-mono text-cyan-300 text-[10px] sm:text-xs">{portal.macAddress}</span>
                       </p>
                     )}
                     {portal.macIdentifier && (
-                      <p className="mb-2 md:mb-3 text-sm">
+                      <p className="mb-2 sm:mb-3 text-xs sm:text-sm">
                         <span className="text-slate-400">ID: </span>
-                        <span className="font-mono text-cyan-300 text-xs md:text-sm">{portal.macIdentifier}</span>
+                        <span className="font-mono text-cyan-300 text-[10px] sm:text-xs">{portal.macIdentifier}</span>
                       </p>
                     )}
                     <div className="flex gap-2">
@@ -602,9 +691,9 @@ export default function HomePageClient({
                         <button
                           onClick={() => {
                             void navigator.clipboard.writeText(portal.macAddress || '');
-                            window.dispatchEvent(new CustomEvent('notice', { detail: { message: 'Adresse MAC copiée!', tone: 'success' } }));
+                            showNotice('Adresse MAC copiee!', 'success');
                           }}
-                          className="flex-1 rounded bg-slate-900 px-3 py-2 text-sm text-slate-300 transition hover:bg-slate-700"
+                          className="flex-1 rounded-lg bg-slate-900/80 px-3 py-2 text-xs sm:text-sm text-slate-300 transition hover:bg-slate-700 active:scale-[0.98]"
                         >
                           Copier MAC
                         </button>
@@ -613,7 +702,7 @@ export default function HomePageClient({
                         href={portal.portalUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-1 rounded bg-orange-600 px-4 py-2 text-center text-white transition hover:bg-orange-700"
+                        className="flex-1 rounded-lg bg-orange-600 px-3 py-2 text-center text-xs sm:text-sm font-medium text-white transition hover:bg-orange-700 active:scale-[0.98]"
                       >
                         Ouvrir
                       </a>
@@ -624,51 +713,53 @@ export default function HomePageClient({
             </section>
           )}
 
-          <div className="my-8 text-center">
-            <ins
-              className="adsbygoogle"
-              style={{ display: 'block', minHeight: '120px' }}
-              data-ad-client="ca-pub-6216012186493058"
-              data-ad-slot="1234567893"
-              data-ad-format="fluid"
-              data-full-width-responsive="true"
-            ></ins>
+          {/* ─── AD - Fluid ─── */}
+          <div className="my-6 sm:my-8 py-3 sm:py-4 border-y border-slate-700/50">
+            <div className="mx-auto max-w-4xl px-2 sm:px-4">
+              <ins
+                className="adsbygoogle"
+                style={{ display: 'block', minHeight: '90px' }}
+                data-ad-client="ca-pub-6216012186493058"
+                data-ad-slot="1234567893"
+                data-ad-format="auto"
+                data-full-width-responsive="true"
+              ></ins>
+            </div>
           </div>
 
+          {/* ─── APPLICATIONS ─── */}
           {showApps && appItems.length > 0 && (
             <section>
-              <div className="mb-4 md:mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+              <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 sm:gap-3">
                 <div>
-                  <p className="text-sm uppercase tracking-[0.25em] text-cyan-300">
-                    Applications
-                  </p>
-                  <h3 className="mt-1 md:mt-2 text-xl md:text-2xl font-bold">Applications</h3>
+                  <p className="text-xs sm:text-sm uppercase tracking-[0.2em] sm:tracking-[0.25em] text-cyan-300">Applications</p>
+                  <h3 className="mt-1 text-lg sm:text-xl md:text-2xl font-bold">Applications</h3>
                 </div>
-                <p className="text-sm text-slate-400">{appItems.length} application(s)</p>
+                <p className="text-xs sm:text-sm text-slate-400">{appItems.length} application(s)</p>
               </div>
 
-              <div className="grid grid-cols-1 gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {appItems.map((app) => (
                   <article
                     key={app._id}
-                    className="rounded-lg border border-slate-700 bg-slate-800/50 p-4 md:p-6 backdrop-blur transition hover:border-cyan-500"
+                    className="rounded-xl border border-slate-700 bg-slate-800/50 p-3.5 sm:p-4 md:p-6 backdrop-blur transition hover:border-cyan-500/70 hover:shadow-lg hover:shadow-cyan-500/5"
                   >
-                    <div className="mb-2 md:mb-3 flex items-center justify-between gap-2 md:gap-3">
-                      <h4 className="text-lg md:text-xl font-semibold">{app.name}</h4>
-                      <span className="text-xs text-slate-400">
+                    <div className="mb-2 sm:mb-3 flex items-start justify-between gap-2">
+                      <h4 className="text-base sm:text-lg md:text-xl font-semibold leading-snug">{app.name}</h4>
+                      <span className="text-[10px] sm:text-xs text-slate-400 flex-shrink-0 mt-1">
                         {formatDate(app.createdAt)}
                       </span>
                     </div>
-                    <p className="mb-3 md:mb-4 text-slate-300">
+                    <p className="mb-3 sm:mb-4 text-xs sm:text-sm text-slate-300 line-clamp-2">
                       {app.description || 'Application disponible au telechargement'}
                     </p>
-                    <div className="mb-3 md:mb-4 text-sm text-slate-400">
+                    <div className="mb-3 sm:mb-4 text-xs sm:text-sm text-slate-400">
                       <p>Version: {app.version || '1.0.0'}</p>
                       {app.fileSize && <p>Taille: {app.fileSize}</p>}
                     </div>
                     <a
                       href={app.downloadUrl}
-                      className="block w-full rounded bg-cyan-600 px-4 py-2 text-center transition hover:bg-cyan-700"
+                      className="block w-full rounded-lg bg-cyan-600 px-4 py-2 text-center text-sm font-medium transition hover:bg-cyan-700 active:scale-[0.98]"
                     >
                       Telecharger
                     </a>
@@ -678,15 +769,16 @@ export default function HomePageClient({
             </section>
           )}
 
+          {/* ─── EMPTY STATE ─── */}
           {!hasContent && (
-            <section className="py-10 md:py-16 text-center">
-              <p className="mb-4 text-3xl md:text-5xl">Aucun contenu</p>
-              <p className="text-lg md:text-xl text-slate-300">
+            <section className="py-10 sm:py-12 md:py-16 text-center">
+              <p className="mb-3 sm:mb-4 text-2xl sm:text-3xl md:text-5xl">Aucun contenu</p>
+              <p className="text-base sm:text-lg md:text-xl text-slate-300">
                 {loadError
                   ? 'Le contenu est temporairement indisponible.'
-                  : 'Rien n&apos;est publie pour le moment.'}
+                  : "Rien n'est publie pour le moment."}
               </p>
-              <p className="text-slate-400">
+              <p className="text-xs sm:text-sm text-slate-400 mt-2">
                 {loadError ? 'Reessayez dans un instant.' : 'Revenez un peu plus tard.'}
               </p>
             </section>
@@ -694,17 +786,18 @@ export default function HomePageClient({
         </section>
       </main>
 
-      <footer className="mt-10 md:mt-16 border-t border-slate-700 bg-slate-900/95">
-        <div className="container mx-auto px-3 md:px-4 py-6 md:py-8">
-          <div className="mb-8 rounded border border-slate-700 bg-slate-800/50 p-4 text-center">
+      {/* ─── FOOTER ─── */}
+      <footer className="mt-8 sm:mt-10 md:mt-16 border-t border-slate-700 bg-slate-900/95">
+        <div className="mx-auto max-w-7xl px-3 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-8">
+          <div className="mb-6 sm:mb-8 rounded-lg border border-slate-700 bg-slate-800/50 p-3 sm:p-4 text-center overflow-hidden">
             <div id="adsterra-home-footer-banner"></div>
           </div>
-          <div className="my-8 rounded border border-slate-700 bg-slate-800/50 p-4 text-center">
+          <div className="mb-6 sm:mb-8 rounded-lg border border-slate-700 bg-slate-800/50 p-3 sm:p-4 text-center overflow-hidden">
             <div id="container-3b8b394af5e5faeda0898b04416b8c81"></div>
           </div>
-          <div className="text-center text-sm text-slate-400">
-            <p>© 2026 Ngori - Partager et decouvrir du contenu</p>
-            <p>Propulse par la plateforme Ngori</p>
+          <div className="text-center text-xs sm:text-sm text-slate-400">
+            <p>&copy; 2026 Ngori - Partager et decouvrir du contenu</p>
+            <p className="mt-1">Propulse par la plateforme Ngori</p>
           </div>
         </div>
       </footer>

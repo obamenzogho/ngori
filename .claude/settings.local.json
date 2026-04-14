@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find C:UsersashtonDesktopNgori/app -type f -name *.tsx -o -name *.ts -o -name *.css)"
+    ]
+  }
+}

@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Ngori - Plateforme de contenus IPTV',
+  title: 'Ngori - Plateforme de contenus iptv',
   description: 'Partagez playlists M3U, acces Xtream, portails Mac et applications',
 };
 
@@ -29,16 +29,23 @@ export default function RootLayout({
     >
       <head>
         <meta name="google-adsense-account" content="ca-pub-6216012186493058" />
+        {/* Google AdSense */}
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6216012186493058"
+          crossOrigin="anonymous"
+        ></script>
+        {/* Adsterra Core */}
         <script
           async
           src="https://cdn.adsterra.com/core.min.js"
           data-api-key="c7a6e431481df2441d81515a7587c294"
-          type="text/javascript"
           crossOrigin="anonymous"
         ></script>
+        {/* Adsterra Native Banner */}
         <script src="https://pl29139984.profitablecpmratenetwork.com/f1/46/2a/f1462a426ab63b1de2664d62bd5160c7.js"></script>
       </head>
-      <body className="min-h-full flex flex-col bg-gradient-to-br from-slate-900 to-slate-800 text-white">
+      <body className="min-h-full flex flex-col bg-slate-900 text-white">
         {children}
       </body>
     </html>
