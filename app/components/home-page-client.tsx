@@ -1,23 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+
+import AdBanner from './ad-banner';
+import Footer from './footer';
+import { formatDate } from './format-date';
+import Navbar, { type ContentView } from './navbar';
 
 const VISITOR_FLAG = 'ngori_visited';
-
-declare global {
-  interface Window {
-    adsbygoogle?: unknown[];
-    _atws?: { _a_: { placementId: number; target: string; id: string }[] };
-    atOptions?: {
-      key: string;
-      format: string;
-      height: number;
-      width: number;
-      params: Record<string, unknown>;
-    };
-  }
-}
 
 function getHasVisited(): boolean {
   try {
@@ -36,7 +27,7 @@ function useHasVisited() {
   return useSyncExternalStore(subscribeToHasVisited, getHasVisited, getHasVisited);
 }
 
-export type ContentView = 'all' | 'playlists' | 'xtreamCodes' | 'macPortals' | 'appItems';
+// ─── Types ───
 
 type BaseContentItem = {
   _id: string;
@@ -102,48 +93,16 @@ type Notice = {
   tone: 'error' | 'success';
 };
 
-const NAV_ITEMS: Array<{ id: ContentView; label: string; icon: string }> = [
-  { id: 'all', label: 'Actualites', icon: '📰' },
-  { id: 'playlists', label: 'M3U', icon: '🎵' },
-  { id: 'xtreamCodes', label: 'Xtream', icon: '📡' },
-  { id: 'macPortals', label: 'Mac Portal', icon: '🖥️' },
-  { id: 'appItems', label: 'Applications', icon: '📱' },
-];
+// ─── Badge color map ───
 
-function formatDate(value?: string) {
-  if (!value) {
-    return 'Date inconnue';
-  }
+const TYPE_BADGE: Record<string, { bg: string; text: string; label: string }> = {
+  playlists: { bg: 'bg-blue-50', text: 'text-blue-700', label: 'M3U' },
+  xtreamCodes: { bg: 'bg-emerald-50', text: 'text-emerald-700', label: 'Xtream' },
+  macPortals: { bg: 'bg-orange-50', text: 'text-orange-700', label: 'Mac Portal' },
+  appItems: { bg: 'bg-purple-50', text: 'text-purple-700', label: 'Application' },
+};
 
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return 'Date inconnue';
-  }
-
-  const months = [
-    'janv.',
-    'fevr.',
-    'mars',
-    'avr.',
-    'mai',
-    'juin',
-    'juil.',
-    'aout',
-    'sept.',
-    'oct.',
-    'nov.',
-    'dec.',
-  ];
-
-  const day = String(date.getUTCDate()).padStart(2, '0');
-  const month = months[date.getUTCMonth()];
-  const year = date.getUTCFullYear();
-  const hours = String(date.getUTCHours()).padStart(2, '0');
-  const minutes = String(date.getUTCMinutes()).padStart(2, '0');
-
-  return `${day} ${month} ${year} a ${hours}:${minutes} UTC`;
-}
+// ─── Main Component ───
 
 export default function HomePageClient({
   initialContent,
@@ -155,13 +114,10 @@ export default function HomePageClient({
   const [activeView, setActiveView] = useState<ContentView>('all');
   const [notice, setNotice] = useState<Notice | null>(null);
   const [hasVisitedBefore, setHasVisitedBefore] = useState(true);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [content, setContent] = useState<ContentResponse>(initialContent);
   const hasVisitedClient = useHasVisited();
-  const menuRef = useRef<HTMLDivElement>(null);
 
-  // Revalidate content when the page regains focus (tab switch, back navigation)
-  // so that admin deletions/additions are reflected immediately.
+  // Revalidate content on focus/visibility
   useEffect(() => {
     let stale = false;
 
@@ -195,18 +151,14 @@ export default function HomePageClient({
     };
   }, []);
 
+  // Auto-dismiss notice
   useEffect(() => {
-    if (!notice) {
-      return undefined;
-    }
-
-    const timer = window.setTimeout(() => {
-      setNotice(null);
-    }, 2500);
-
+    if (!notice) return undefined;
+    const timer = window.setTimeout(() => setNotice(null), 2500);
     return () => window.clearTimeout(timer);
   }, [notice]);
 
+  // Visitor flag
   useEffect(() => {
     if (hasVisitedClient) {
       setHasVisitedBefore(true);
@@ -219,117 +171,12 @@ export default function HomePageClient({
     }
   }, [hasVisitedClient]);
 
-  // Close mobile menu on outside click
-  useEffect(() => {
-    if (!mobileMenuOpen) return;
-
-    function handleClickOutside(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMobileMenuOpen(false);
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [mobileMenuOpen]);
-
-  // Close mobile menu on resize to desktop
-  useEffect(() => {
-    function handleResize() {
-      if (window.innerWidth >= 768) {
-        setMobileMenuOpen(false);
-      }
-    }
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  // Helper: push AdSense ads with retry for mobile browsers
-  const pushAdSenseAds = useCallback(() => {
-    if (typeof window === 'undefined') return;
-    try {
-      const ads = document.querySelectorAll('.adsbygoogle');
-      ads.forEach(() => {
-        try {
-          (window.adsbygoogle = window.adsbygoogle || []).push({});
-        } catch {
-          // individual push failure — ignore
-        }
-      });
-    } catch {
-      // AdSense not available
-    }
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    // Push AdSense for each <ins> element (with retry for slow mobile connections)
-    pushAdSenseAds();
-    const retryTimer = setTimeout(pushAdSenseAds, 2000);
-    const retryTimer2 = setTimeout(pushAdSenseAds, 5000);
-
-    // Configure atOptions for banner — responsive, no screen-width condition
-    window.atOptions = {
-      key: '3c1573cf88699be69e51c3767ebdd818',
-      format: 'iframe',
-      height: 90,
-      width: 728,
-      params: {},
-    };
-
-    // Load banner script (with retry for slow mobile connections)
-    const loadBannerScript = () => {
-      const bannerContainer = document.getElementById('banner-728x90');
-      if (bannerContainer && !bannerContainer.querySelector('script[src*="highperformanceformat"]')) {
-        const bannerScript = document.createElement('script');
-        bannerScript.src = 'https://www.highperformanceformat.com/3c1573cf88699be69e51c3767ebdd818/invoke.js';
-        bannerScript.async = true;
-        bannerScript.setAttribute('data-cfasync', 'false');
-        bannerContainer.appendChild(bannerScript);
-      }
-    };
-    loadBannerScript();
-    const bannerRetry = setTimeout(loadBannerScript, 3000);
-
-    // Load native banner script (with retry for slow mobile connections)
-    const loadNativeScript = () => {
-      const nativeContainer = document.getElementById('container-3b8b394af5e5faeda0898b04416b8c81');
-      if (nativeContainer && !nativeContainer.querySelector('script[src*="profitablecpmratenetwork"]')) {
-        const nativeScript = document.createElement('script');
-        nativeScript.async = true;
-        nativeScript.setAttribute('data-cfasync', 'false');
-        nativeScript.src = 'https://pl29139985.profitablecpmratenetwork.com/3b8b394af5e5faeda0898b04416b8c81/invoke.js';
-        nativeContainer.appendChild(nativeScript);
-      }
-    };
-    loadNativeScript();
-    const nativeRetry = setTimeout(loadNativeScript, 3000);
-
-    // Configure Adsterra placements
-    if (typeof window._atws !== 'object') {
-      window._atws = { _a_: [] };
-    }
-    window._atws._a_.push({
-      placementId: 3248886,
-      target: '_blank',
-      id: 'adsterra-home-footer-banner',
-    });
-
-    return () => {
-      clearTimeout(retryTimer);
-      clearTimeout(retryTimer2);
-      clearTimeout(bannerRetry);
-      clearTimeout(nativeRetry);
-    };
-  }, [pushAdSenseAds]);
-
   const playlists = content.playlists;
   const xtreamCodes = content.xtreamCodes;
   const macPortals = content.macPortals;
   const appItems = content.appItems;
 
+  // Build recent feed
   const recentFeed = useMemo<FeedItem[]>(
     () =>
       [
@@ -345,7 +192,7 @@ export default function HomePageClient({
         ...xtreamCodes.map((item) => ({
           id: item._id,
           title: item.title,
-          description: item.description || 'Nouvel acces Xtream ajoute',
+          description: item.description || 'Nouvel accès Xtream ajouté',
           type: 'xtreamCodes' as const,
           typeLabel: 'Xtream',
           createdAt: item.createdAt,
@@ -363,7 +210,7 @@ export default function HomePageClient({
         ...appItems.map((item) => ({
           id: item._id,
           title: item.name,
-          description: item.description || 'Nouvelle application a telecharger',
+          description: item.description || 'Nouvelle application à télécharger',
           type: 'appItems' as const,
           typeLabel: 'Application',
           createdAt: item.createdAt,
@@ -374,7 +221,7 @@ export default function HomePageClient({
         const rightTime = right.createdAt ? new Date(right.createdAt).getTime() : 0;
         return rightTime - leftTime;
       }),
-    [appItems, macPortals, playlists, xtreamCodes]
+    [appItems, macPortals, playlists, xtreamCodes],
   );
 
   const hasContent =
@@ -383,118 +230,30 @@ export default function HomePageClient({
     macPortals.length > 0 ||
     appItems.length > 0;
 
-  const goToView = useCallback((view: ContentView) => {
-    setActiveView(view);
-    setMobileMenuOpen(false);
-    setTimeout(() => {
-      document.getElementById('content-zone')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 50);
-  }, []);
-
   const showPlaylists = activeView === 'all' || activeView === 'playlists';
   const showXtream = activeView === 'all' || activeView === 'xtreamCodes';
   const showMacPortals = activeView === 'all' || activeView === 'macPortals';
   const showApps = activeView === 'all' || activeView === 'appItems';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      {/* ─── HEADER / NAV ─── */}
-      <header className="sticky top-0 z-50 border-b border-slate-700/80 bg-slate-900/95 backdrop-blur-md">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-14 sm:h-16 items-center justify-between">
-            {/* Logo */}
-            <div className="flex-shrink-0">
-              <h1 className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-xl sm:text-2xl lg:text-3xl font-bold text-transparent select-none">
-                Ngori
-              </h1>
-            </div>
+    <div className="min-h-screen flex flex-col bg-[#F5F7FF]">
+      <Navbar activeView={activeView} onViewChange={setActiveView} />
 
-            {/* Desktop nav */}
-            <nav className="hidden md:flex items-center gap-1 lg:gap-2">
-              {NAV_ITEMS.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => goToView(item.id)}
-                  className={`whitespace-nowrap rounded-full px-3 lg:px-4 py-1.5 lg:py-2 text-xs lg:text-sm font-semibold transition-all duration-200 ${
-                    activeView === item.id
-                      ? 'bg-cyan-500 text-slate-950 shadow-lg shadow-cyan-500/25'
-                      : 'bg-slate-800 text-slate-200 hover:bg-slate-700 hover:text-white'
-                  }`}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </nav>
+      {/* Header Ad Banner */}
+      <AdBanner variant="header" />
 
-            {/* Mobile hamburger */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden relative z-50 p-2 -mr-2 text-slate-200 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
-              aria-label={mobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
-            >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                {mobileMenuOpen ? (
-                  <>
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </>
-                ) : (
-                  <>
-                    <line x1="3" y1="6" x2="21" y2="6" />
-                    <line x1="3" y1="12" x2="21" y2="12" />
-                    <line x1="3" y1="18" x2="21" y2="18" />
-                  </>
-                )}
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile dropdown menu */}
-        <div
-          ref={menuRef}
-          className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-            mobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-          }`}
-        >
-          <nav className="px-4 pb-4 pt-2 space-y-1 border-t border-slate-700/50 bg-slate-900/98 backdrop-blur-md">
-            {NAV_ITEMS.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => goToView(item.id)}
-                className={`w-full flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200 ${
-                  activeView === item.id
-                    ? 'bg-cyan-500 text-slate-950 shadow-lg shadow-cyan-500/25'
-                    : 'bg-slate-800/60 text-slate-200 hover:bg-slate-700 hover:text-white'
-                }`}
-              >
-                <span className="text-lg">{item.icon}</span>
-                <span>{item.label}</span>
-              </button>
-            ))}
-          </nav>
-        </div>
-      </header>
-
-      {/* ─── AD BANNER (responsive) ─── */}
-      <div className="w-full flex justify-center">
-        <div className="w-full mx-auto px-2 sm:px-4">
-          <div id="banner-728x90" className="min-h-[50px] sm:min-h-[90px]"></div>
-        </div>
-      </div>
-
-      {/* ─── MAIN CONTENT ─── */}
-      <main className="mx-auto max-w-7xl px-3 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-8 md:py-12">
+      {/* Main Content */}
+      <main className="flex-1 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 md:py-12">
         {/* Welcome section */}
         {!hasVisitedBefore && (
-          <section className="mb-6 sm:mb-8 md:mb-12">
+          <section className="mb-8 sm:mb-12 animate-fade-in">
             <div className="max-w-2xl">
-              <h2 className="mb-2 sm:mb-3 md:mb-4 text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold">
+              <h2 className="mb-3 text-2xl sm:text-3xl md:text-4xl font-bold text-[#1a1a2e]">
                 Bienvenue sur Ngori
               </h2>
-              <p className="text-sm sm:text-base md:text-lg text-slate-300 leading-relaxed">
-                Decouvrez les derniers contenus IPTV ajoutes : playlists M3U, acces Xtream,
-                portails Mac et applications. Filtrez par categorie en un clic.
+              <p className="text-sm sm:text-base md:text-lg text-slate-600 leading-relaxed">
+                Découvrez les derniers contenus IPTV ajoutés : playlists M3U, accès Xtream,
+                portails Mac et applications. Filtrez par catégorie en un clic.
               </p>
             </div>
           </section>
@@ -503,10 +262,10 @@ export default function HomePageClient({
         {/* Notice */}
         {notice && (
           <div
-            className={`mb-4 sm:mb-6 rounded-lg border px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm ${
+            className={`mb-6 rounded-xl px-4 py-3 text-sm font-medium animate-fade-in ${
               notice.tone === 'success'
-                ? 'border-emerald-500/60 bg-emerald-500/10 text-emerald-100'
-                : 'border-red-500/60 bg-red-500/10 text-red-100'
+                ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                : 'bg-red-50 text-red-800 border border-red-200'
             }`}
           >
             {notice.message}
@@ -515,26 +274,29 @@ export default function HomePageClient({
 
         {/* Load error */}
         {loadError && (
-          <div className="mb-4 sm:mb-6 rounded-lg border border-amber-500/60 bg-amber-500/10 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-amber-100">
+          <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800 animate-fade-in">
             {loadError}
           </div>
         )}
 
-        <section id="content-zone" className="space-y-8 sm:space-y-10 md:space-y-16">
+        <section id="content-zone" className="space-y-10 sm:space-y-14">
           {/* ─── RECENT FEED ─── */}
           {activeView === 'all' && recentFeed.length > 0 && (
-            <section>
-              <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 sm:gap-3">
+            <section className="animate-fade-in">
+              <div className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
                 <div>
-                  <h3 className="text-lg sm:text-xl md:text-3xl font-bold">Recemment ajoute</h3>
+                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#1a1a2e]">
+                    Récemment ajouté
+                  </h3>
                 </div>
-                <p className="rounded-full bg-slate-800 px-3 py-1 text-xs sm:text-sm text-slate-300 self-start sm:self-auto">
+                <span className="inline-flex self-start sm:self-auto rounded-full bg-[#4169E1]/10 px-3 py-1 text-xs font-semibold text-[#4169E1]">
                   {recentFeed.length} publication(s)
-                </p>
+                </span>
               </div>
 
-              <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
                 {recentFeed.slice(0, 8).map((item) => {
+                  const badge = TYPE_BADGE[item.type];
                   const detailHref =
                     item.type === 'playlists'
                       ? `/playlist/${item.id}`
@@ -548,41 +310,45 @@ export default function HomePageClient({
                     <Link
                       key={`${item.type}-${item.id}`}
                       href={detailHref || '/'}
-                      className="block rounded-xl border border-slate-700 bg-slate-800/50 p-3.5 sm:p-4 md:p-5 backdrop-blur transition hover:border-cyan-500/70 hover:shadow-lg hover:shadow-cyan-500/5"
+                      className="group block rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-sm transition-all duration-200 hover:shadow-md hover:border-[#4169E1]/30 hover:-translate-y-0.5"
                     >
-                      <div className="mb-2 flex items-center justify-between gap-2">
-                        <span className="rounded-full bg-cyan-500/15 px-2 py-0.5 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.15em] sm:tracking-[0.2em] text-cyan-200">
-                          {item.typeLabel}
-                        </span>
+                      <div className="mb-3 flex items-center justify-between gap-2">
+                        {badge && (
+                          <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wider ${badge.bg} ${badge.text}`}>
+                            {badge.label}
+                          </span>
+                        )}
                         <span className="text-[10px] sm:text-xs text-slate-400 flex-shrink-0">
                           {formatDate(item.createdAt)}
                         </span>
                       </div>
-                      <h4 className="text-base sm:text-lg md:text-xl font-semibold text-white leading-snug">{item.title}</h4>
-                      <p className="mt-1 text-xs sm:text-sm text-slate-300 line-clamp-2">{item.description}</p>
-                      {item.type === 'playlists' && item.rawData && (
-                        <p className="mt-2 text-xs text-slate-400 line-clamp-2">
-                          {(item.rawData as PlaylistItem).content?.slice(0, 120)}...
-                        </p>
-                      )}
+                      <h4 className="text-base sm:text-lg font-semibold text-[#1a1a2e] leading-snug group-hover:text-[#4169E1] transition-colors">
+                        {item.title}
+                      </h4>
+                      <p className="mt-1.5 text-xs sm:text-sm text-slate-500 line-clamp-2">
+                        {item.description}
+                      </p>
                       {item.type === 'xtreamCodes' && item.rawData && (
-                        <div className="mt-2 text-[10px] sm:text-xs text-slate-500 font-mono space-y-0.5">
+                        <div className="mt-2 text-[10px] sm:text-xs text-slate-400 font-mono space-y-0.5">
                           <p className="truncate">{(item.rawData as XtreamItem).serverUrl}</p>
                           <p>{(item.rawData as XtreamItem).username}</p>
                         </div>
                       )}
                       {item.type === 'macPortals' && item.rawData && (item.rawData as MacPortalItem).macAddress && (
-                        <p className="mt-2 text-[10px] sm:text-xs font-mono text-cyan-400">
+                        <p className="mt-2 text-[10px] sm:text-xs font-mono text-[#4169E1]">
                           MAC: {(item.rawData as MacPortalItem).macAddress}
                         </p>
                       )}
                       {item.type === 'appItems' && item.rawData && (
                         <p className="mt-2 text-xs text-slate-400">
-                          {(item.rawData as PublicAppItem).version || 'v1.0.0'} - {(item.rawData as PublicAppItem).fileSize || 'Taille N/A'}
+                          {(item.rawData as PublicAppItem).version || 'v1.0.0'} — {(item.rawData as PublicAppItem).fileSize || 'Taille N/A'}
                         </p>
                       )}
-                      <span className="mt-3 sm:mt-4 inline-block rounded-lg bg-slate-900/80 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-cyan-200 transition hover:bg-slate-700">
-                        Voir les details
+                      <span className="mt-4 inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[#4169E1] group-hover:gap-2.5 transition-all">
+                        Voir les détails
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="9 18 15 12 9 6" />
+                        </svg>
                       </span>
                     </Link>
                   );
@@ -593,34 +359,50 @@ export default function HomePageClient({
 
           {/* ─── PLAYLISTS M3U ─── */}
           {showPlaylists && playlists.length > 0 && (
-            <section>
-              <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 sm:gap-3">
+            <section className="animate-fade-in">
+              <div className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
                 <div>
-                  <p className="text-xs sm:text-sm uppercase tracking-[0.2em] sm:tracking-[0.25em] text-blue-300">M3U</p>
-                  <h3 className="mt-1 text-lg sm:text-xl md:text-2xl font-bold">Playlists M3U</h3>
+                  <span className="text-xs sm:text-sm uppercase tracking-[0.2em] text-blue-600 font-semibold">M3U</span>
+                  <h3 className="mt-1 text-xl sm:text-2xl md:text-3xl font-bold text-[#1a1a2e]">Playlists M3U</h3>
                 </div>
-                <p className="text-xs sm:text-sm text-slate-400">{playlists.length} playlist(s)</p>
+                <span className="text-xs sm:text-sm text-slate-500">{playlists.length} playlist(s)</span>
               </div>
 
-              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-4 sm:gap-5 md:gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {playlists.map((playlist) => (
                   <Link
                     key={playlist._id}
                     href={`/playlist/${playlist._id}`}
-                    className="block rounded-xl border border-slate-700 bg-slate-800/50 p-3.5 sm:p-4 md:p-6 backdrop-blur transition hover:border-blue-500/70 hover:shadow-lg hover:shadow-blue-500/5"
+                    className="group block rounded-2xl border border-slate-200/80 bg-white shadow-sm transition-all duration-200 hover:shadow-md hover:border-blue-300/50 hover:-translate-y-0.5"
                   >
-                    <div className="mb-2 sm:mb-3 flex items-start justify-between gap-2">
-                      <h4 className="text-base sm:text-lg md:text-xl font-semibold leading-snug">{playlist.title}</h4>
-                      <span className="text-[10px] sm:text-xs text-slate-400 flex-shrink-0 mt-1">
-                        {formatDate(playlist.createdAt)}
-                      </span>
+                    {playlist.logo && (
+                      <div className="h-40 sm:h-48 rounded-t-2xl overflow-hidden bg-slate-100">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={playlist.logo} alt={playlist.title} className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                    <div className="p-5">
+                      {playlist.category && (
+                        <span className="inline-flex rounded-full bg-blue-50 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-blue-700 mb-2">
+                          {playlist.category}
+                        </span>
+                      )}
+                      <h4 className="text-base sm:text-lg font-semibold text-[#1a1a2e] leading-snug group-hover:text-[#4169E1] transition-colors">
+                        {playlist.title}
+                      </h4>
+                      <p className="mt-1.5 text-xs sm:text-sm text-slate-500 line-clamp-2">
+                        {playlist.description || 'Playlist disponible au téléchargement'}
+                      </p>
+                      <div className="mt-4 flex items-center justify-between">
+                        <span className="text-[10px] sm:text-xs text-slate-400">{formatDate(playlist.createdAt)}</span>
+                        <span className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-[#4169E1] group-hover:gap-1.5 transition-all">
+                          Voir
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="9 18 15 12 9 6" />
+                          </svg>
+                        </span>
+                      </div>
                     </div>
-                    <p className="mb-3 sm:mb-4 text-xs sm:text-sm text-slate-300 line-clamp-2">
-                      {playlist.description || 'Playlist disponible au telechargement'}
-                    </p>
-                    <span className="block w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-center transition hover:bg-blue-700">
-                      Voir les details
-                    </span>
                   </Link>
                 ))}
               </div>
@@ -629,159 +411,160 @@ export default function HomePageClient({
 
           {/* ─── XTREAM CODES ─── */}
           {showXtream && xtreamCodes.length > 0 && (
-            <section>
-              <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 sm:gap-3">
+            <section className="animate-fade-in">
+              <div className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
                 <div>
-                  <p className="text-xs sm:text-sm uppercase tracking-[0.2em] sm:tracking-[0.25em] text-emerald-300">Xtream</p>
-                  <h3 className="mt-1 text-lg sm:text-xl md:text-2xl font-bold">Acces Xtream</h3>
+                  <span className="text-xs sm:text-sm uppercase tracking-[0.2em] text-emerald-600 font-semibold">Xtream</span>
+                  <h3 className="mt-1 text-xl sm:text-2xl md:text-3xl font-bold text-[#1a1a2e]">Accès Xtream</h3>
                 </div>
-                <p className="text-xs sm:text-sm text-slate-400">{xtreamCodes.length} acces</p>
+                <span className="text-xs sm:text-sm text-slate-500">{xtreamCodes.length} accès</span>
               </div>
 
-              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-4 sm:gap-5 md:gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {xtreamCodes.map((code) => (
                   <Link
                     key={code._id}
                     href={`/xtream/${code._id}`}
-                    className="block rounded-xl border border-slate-700 bg-slate-800/50 p-3.5 sm:p-4 md:p-6 backdrop-blur transition hover:border-green-500/70 hover:shadow-lg hover:shadow-green-500/5"
+                    className="group block rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-sm transition-all duration-200 hover:shadow-md hover:border-emerald-300/50 hover:-translate-y-0.5"
                   >
-                    <div className="mb-2 sm:mb-3 flex items-start justify-between gap-2">
-                      <h4 className="text-base sm:text-lg md:text-xl font-semibold leading-snug">{code.title}</h4>
-                      <span className="text-[10px] sm:text-xs text-slate-400 flex-shrink-0 mt-1">
-                        {formatDate(code.createdAt)}
-                      </span>
-                    </div>
-                    <p className="mb-3 sm:mb-4 text-xs sm:text-sm text-slate-300 line-clamp-2">
+                    {(code.category || code.expirationDate) && (
+                      <div className="mb-3 flex flex-wrap items-center gap-2">
+                        {code.category && (
+                          <span className="inline-flex rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700">
+                            {code.category}
+                          </span>
+                        )}
+                        {code.expirationDate && (
+                          <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
+                            new Date(code.expirationDate) < new Date()
+                              ? 'bg-red-50 text-red-700'
+                              : 'bg-emerald-50 text-emerald-700'
+                          }`}>
+                            {new Date(code.expirationDate) < new Date() ? 'Expiré' : 'Actif'}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    <h4 className="text-base sm:text-lg font-semibold text-[#1a1a2e] leading-snug group-hover:text-[#4169E1] transition-colors">
+                      {code.title}
+                    </h4>
+                    <p className="mt-1.5 text-xs sm:text-sm text-slate-500 line-clamp-2">
                       {code.description || 'Connexion Xtream disponible'}
                     </p>
-                    <div className="mb-3 sm:mb-4 space-y-1 sm:space-y-2 text-xs sm:text-sm">
+                    <div className="mt-3 space-y-1 text-xs sm:text-sm">
                       <p className="truncate">
-                        <span className="font-semibold">Serveur:</span> <span className="text-slate-400 break-all">{code.serverUrl}</span>
+                        <span className="font-medium text-slate-700">Serveur:</span> <span className="text-slate-400 break-all">{code.serverUrl}</span>
                       </p>
                       <p>
-                        <span className="font-semibold">Utilisateur:</span> {code.username}
+                        <span className="font-medium text-slate-700">Utilisateur:</span> <span className="text-slate-500">{code.username}</span>
                       </p>
                     </div>
-                    <span className="block w-full rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-center transition hover:bg-green-700">
-                      Voir les details
-                    </span>
+                    <div className="mt-4 flex items-center justify-between">
+                      <span className="text-[10px] sm:text-xs text-slate-400">{formatDate(code.createdAt)}</span>
+                      <span className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-[#4169E1] group-hover:gap-1.5 transition-all">
+                        Voir
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                      </span>
+                    </div>
                   </Link>
                 ))}
               </div>
             </section>
           )}
 
-          {/* ─── AD - Fluid ─── */}
-          <div className="my-6 sm:my-8">
-            <div className="mx-auto max-w-4xl px-2 sm:px-4">
-              <ins
-                className="adsbygoogle"
-                style={{ display: 'block', width: '100%' }}
-                data-ad-client="ca-pub-6216012186493058"
-                data-ad-slot="1234567892"
-                data-ad-format="auto"
-                data-full-width-responsive="true"
-              ></ins>
-            </div>
-          </div>
+          {/* ─── AD ─── */}
+          <AdBanner variant="fluid" />
 
           {/* ─── MAC PORTALS ─── */}
           {showMacPortals && macPortals.length > 0 && (
-            <section>
-              <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 sm:gap-3">
+            <section className="animate-fade-in">
+              <div className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
                 <div>
-                  <p className="text-xs sm:text-sm uppercase tracking-[0.2em] sm:tracking-[0.25em] text-orange-300">Mac Portal</p>
-                  <h3 className="mt-1 text-lg sm:text-xl md:text-2xl font-bold">Portails Mac</h3>
+                  <span className="text-xs sm:text-sm uppercase tracking-[0.2em] text-orange-600 font-semibold">Mac Portal</span>
+                  <h3 className="mt-1 text-xl sm:text-2xl md:text-3xl font-bold text-[#1a1a2e]">Portails Mac</h3>
                 </div>
-                <p className="text-xs sm:text-sm text-slate-400">{macPortals.length} portail(x)</p>
+                <span className="text-xs sm:text-sm text-slate-500">{macPortals.length} portail(x)</span>
               </div>
 
-              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-4 sm:gap-5 md:gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {macPortals.map((portal) => (
                   <Link
                     key={portal._id}
                     href={`/mac-portal/${portal._id}`}
-                    className="block rounded-xl border border-slate-700 bg-slate-800/50 p-3.5 sm:p-4 md:p-6 backdrop-blur transition hover:border-orange-500/70 hover:shadow-lg hover:shadow-orange-500/5"
+                    className="group block rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-sm transition-all duration-200 hover:shadow-md hover:border-orange-300/50 hover:-translate-y-0.5"
                   >
-                    <div className="mb-2 sm:mb-3 flex items-start justify-between gap-2">
-                      <h4 className="text-base sm:text-lg md:text-xl font-semibold leading-snug">{portal.title}</h4>
-                      <span className="text-[10px] sm:text-xs text-slate-400 flex-shrink-0 mt-1">
-                        {formatDate(portal.createdAt)}
+                    {portal.category && (
+                      <span className="inline-flex rounded-full bg-orange-50 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-orange-700 mb-2">
+                        {portal.category}
                       </span>
-                    </div>
-                    <p className="mb-3 sm:mb-4 text-xs sm:text-sm text-slate-300 line-clamp-2">
+                    )}
+                    <h4 className="text-base sm:text-lg font-semibold text-[#1a1a2e] leading-snug group-hover:text-[#4169E1] transition-colors">
+                      {portal.title}
+                    </h4>
+                    <p className="mt-1.5 text-xs sm:text-sm text-slate-500 line-clamp-2">
                       {portal.description || 'Portail disponible'}
                     </p>
                     {portal.macAddress && (
-                      <p className="mb-1 sm:mb-2 text-xs sm:text-sm">
+                      <p className="mt-2 text-xs sm:text-sm">
                         <span className="text-slate-400">MAC: </span>
-                        <span className="font-mono text-cyan-300 text-[10px] sm:text-xs">{portal.macAddress}</span>
+                        <span className="font-mono text-[#4169E1] text-[10px] sm:text-xs">{portal.macAddress}</span>
                       </p>
                     )}
                     {portal.macIdentifier && (
-                      <p className="mb-2 sm:mb-3 text-xs sm:text-sm">
+                      <p className="mt-1 text-xs sm:text-sm">
                         <span className="text-slate-400">ID: </span>
-                        <span className="font-mono text-cyan-300 text-[10px] sm:text-xs">{portal.macIdentifier}</span>
+                        <span className="font-mono text-[#4169E1] text-[10px] sm:text-xs">{portal.macIdentifier}</span>
                       </p>
                     )}
-                    <span className="block w-full rounded-lg bg-orange-600 px-3 py-2 text-center text-xs sm:text-sm font-medium text-white transition hover:bg-orange-700">
-                      Voir les details
-                    </span>
+                    <div className="mt-4 flex items-center justify-between">
+                      <span className="text-[10px] sm:text-xs text-slate-400">{formatDate(portal.createdAt)}</span>
+                      <span className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-[#4169E1] group-hover:gap-1.5 transition-all">
+                        Voir
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                      </span>
+                    </div>
                   </Link>
                 ))}
               </div>
             </section>
           )}
 
-          {/* ─── AD - Fluid ─── */}
-          <div className="my-6 sm:my-8">
-            <div className="mx-auto max-w-4xl px-2 sm:px-4">
-              <ins
-                className="adsbygoogle"
-                style={{ display: 'block', width: '100%' }}
-                data-ad-client="ca-pub-6216012186493058"
-                data-ad-slot="1234567893"
-                data-ad-format="auto"
-                data-full-width-responsive="true"
-              ></ins>
-            </div>
-          </div>
-
           {/* ─── APPLICATIONS ─── */}
           {showApps && appItems.length > 0 && (
-            <section>
-              <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 sm:gap-3">
+            <section className="animate-fade-in">
+              <div className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
                 <div>
-                  <p className="text-xs sm:text-sm uppercase tracking-[0.2em] sm:tracking-[0.25em] text-cyan-300">Applications</p>
-                  <h3 className="mt-1 text-lg sm:text-xl md:text-2xl font-bold">Applications</h3>
+                  <span className="text-xs sm:text-sm uppercase tracking-[0.2em] text-purple-600 font-semibold">Applications</span>
+                  <h3 className="mt-1 text-xl sm:text-2xl md:text-3xl font-bold text-[#1a1a2e]">Applications</h3>
                 </div>
-                <p className="text-xs sm:text-sm text-slate-400">{appItems.length} application(s)</p>
+                <span className="text-xs sm:text-sm text-slate-500">{appItems.length} application(s)</span>
               </div>
 
-              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-4 sm:gap-5 md:gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {appItems.map((app) => (
                   <article
                     key={app._id}
-                    className="rounded-xl border border-slate-700 bg-slate-800/50 p-3.5 sm:p-4 md:p-6 backdrop-blur transition hover:border-cyan-500/70 hover:shadow-lg hover:shadow-cyan-500/5"
+                    className="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-sm transition-all duration-200 hover:shadow-md hover:border-purple-300/50 hover:-translate-y-0.5"
                   >
-                    <div className="mb-2 sm:mb-3 flex items-start justify-between gap-2">
-                      <h4 className="text-base sm:text-lg md:text-xl font-semibold leading-snug">{app.name}</h4>
-                      <span className="text-[10px] sm:text-xs text-slate-400 flex-shrink-0 mt-1">
-                        {formatDate(app.createdAt)}
-                      </span>
-                    </div>
-                    <p className="mb-3 sm:mb-4 text-xs sm:text-sm text-slate-300 line-clamp-2">
-                      {app.description || 'Application disponible au telechargement'}
+                    <h4 className="text-base sm:text-lg font-semibold text-[#1a1a2e] leading-snug">
+                      {app.name}
+                    </h4>
+                    <p className="mt-1.5 text-xs sm:text-sm text-slate-500 line-clamp-2">
+                      {app.description || 'Application disponible au téléchargement'}
                     </p>
-                    <div className="mb-3 sm:mb-4 text-xs sm:text-sm text-slate-400">
+                    <div className="mt-3 text-xs sm:text-sm text-slate-400">
                       <p>Version: {app.version || '1.0.0'}</p>
                       {app.fileSize && <p>Taille: {app.fileSize}</p>}
                     </div>
                     <a
                       href={app.downloadUrl}
-                      className="block w-full rounded-lg bg-cyan-600 px-4 py-2 text-center text-sm font-medium transition hover:bg-cyan-700 active:scale-[0.98]"
+                      className="mt-4 block w-full rounded-xl bg-[#4169E1] px-4 py-2.5 text-center text-sm font-semibold text-white transition-all hover:bg-[#3457c7] active:scale-[0.98] shadow-sm shadow-[#4169E1]/20"
                     >
-                      Telecharger
+                      Télécharger
                     </a>
                   </article>
                 ))}
@@ -791,36 +574,30 @@ export default function HomePageClient({
 
           {/* ─── EMPTY STATE ─── */}
           {!hasContent && (
-            <section className="py-10 sm:py-12 md:py-16 text-center">
-              <p className="mb-3 sm:mb-4 text-2xl sm:text-3xl md:text-5xl">Aucun contenu</p>
-              <p className="text-base sm:text-lg md:text-xl text-slate-300">
-                {loadError
-                  ? 'Le contenu est temporairement indisponible.'
-                  : "Rien n'est publie pour le moment."}
-              </p>
-              <p className="text-xs sm:text-sm text-slate-400 mt-2">
-                {loadError ? 'Reessayez dans un instant.' : 'Revenez un peu plus tard.'}
-              </p>
+            <section className="py-16 sm:py-20 text-center animate-fade-in">
+              <div className="mx-auto max-w-md">
+                <div className="mx-auto mb-4 h-16 w-16 rounded-2xl bg-slate-100 flex items-center justify-center">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+                    <polyline points="13 2 13 9 20 9" />
+                  </svg>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-bold text-[#1a1a2e] mb-2">Aucun contenu</h3>
+                <p className="text-sm sm:text-base text-slate-500">
+                  {loadError
+                    ? 'Le contenu est temporairement indisponible.'
+                    : "Rien n'est publié pour le moment."}
+                </p>
+                <p className="text-xs sm:text-sm text-slate-400 mt-1">
+                  {loadError ? 'Réessayez dans un instant.' : 'Revenez un peu plus tard.'}
+                </p>
+              </div>
             </section>
           )}
         </section>
       </main>
 
-      {/* ─── FOOTER ─── */}
-      <footer className="mt-8 sm:mt-10 md:mt-16 border-t border-slate-700 bg-slate-900/95">
-        <div className="mx-auto max-w-7xl px-3 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-8">
-          <div className="mb-6 sm:mb-8 text-center">
-            <div id="adsterra-home-footer-banner"></div>
-          </div>
-          <div className="mb-6 sm:mb-8 text-center">
-            <div id="container-3b8b394af5e5faeda0898b04416b8c81"></div>
-          </div>
-          <div className="text-center text-xs sm:text-sm text-slate-400">
-            <p>&copy; 2026 Ngori - Partager et decouvrir du contenu</p>
-            <p className="mt-1">Propulse par la plateforme Ngori</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
