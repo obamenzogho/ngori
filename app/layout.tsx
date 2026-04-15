@@ -29,19 +29,6 @@ export default function RootLayout({
     >
       <head>
         <meta name="google-adsense-account" content="ca-pub-6216012186493058" />
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6216012186493058"
-        ></script>
-        <script
-          async
-          src="https://cdn.adsterra.com/core.min.js"
-          data-api-key="c7a6e431481df2441d81515a7587c294"
-          crossOrigin="anonymous"
-        ></script>
-        <script src="https://pl29139984.profitablecpmratenetwork.com/f1/46/2a/f1462a426ab63b1de2664d62bd5160c7.js"></script>
-        {/* Monetag */}
-        <script src="https://quge5.com/88/tag.min.js" data-zone="229945" async data-cfasync="false"></script>
       </head>
       <body className="min-h-full flex flex-col bg-[#F5F7FF] text-[#1a1a2e]">
         {children}

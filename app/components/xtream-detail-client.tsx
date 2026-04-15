@@ -5,6 +5,7 @@ import { useState } from 'react';
 
 import Footer from './footer';
 import { formatDate } from './format-date';
+import { IconArrowLeft, IconCopy, IconEye, IconEyeOff } from './icons';
 
 type XtreamDetail = {
   _id: string;
@@ -62,10 +63,7 @@ export default function XtreamDetailClient({ xtream }: { xtream: XtreamDetail })
               href="/"
               className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-[#1a1a2e]"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="19" y1="12" x2="5" y2="12" />
-                <polyline points="12 19 5 12 12 5" />
-              </svg>
+              <IconArrowLeft size={18} />
               Retour
             </Link>
             <div className="flex items-center gap-2">
@@ -141,8 +139,9 @@ export default function XtreamDetailClient({ xtream }: { xtream: XtreamDetail })
                   </div>
                   <button
                     onClick={() => void copyField('Serveur', xtream.serverUrl)}
-                    className="flex-shrink-0 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-slate-600 border border-slate-200 transition hover:bg-slate-50 hover:text-[#1a1a2e]"
+                    className="flex-shrink-0 inline-flex items-center gap-1 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-slate-600 border border-slate-200 transition hover:bg-slate-50 hover:text-[#1a1a2e]"
                   >
+                    <IconCopy size={14} />
                     Copier
                   </button>
                 </div>
@@ -157,8 +156,9 @@ export default function XtreamDetailClient({ xtream }: { xtream: XtreamDetail })
                   </div>
                   <button
                     onClick={() => void copyField('Utilisateur', xtream.username)}
-                    className="flex-shrink-0 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-slate-600 border border-slate-200 transition hover:bg-slate-50 hover:text-[#1a1a2e]"
+                    className="flex-shrink-0 inline-flex items-center gap-1 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-slate-600 border border-slate-200 transition hover:bg-slate-50 hover:text-[#1a1a2e]"
                   >
+                    <IconCopy size={14} />
                     Copier
                   </button>
                 </div>
@@ -176,14 +176,16 @@ export default function XtreamDetailClient({ xtream }: { xtream: XtreamDetail })
                   <div className="flex gap-2 flex-shrink-0">
                     <button
                       onClick={() => setShowPassword(!showPassword)}
-                      className="rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-slate-600 border border-slate-200 transition hover:bg-slate-50 hover:text-[#1a1a2e]"
+                      className="inline-flex items-center gap-1 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-slate-600 border border-slate-200 transition hover:bg-slate-50 hover:text-[#1a1a2e]"
                     >
+                      {showPassword ? <IconEyeOff size={14} /> : <IconEye size={14} />}
                       {showPassword ? 'Cacher' : 'Voir'}
                     </button>
                     <button
                       onClick={() => void copyField('Mot de passe', xtream.password)}
-                      className="rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-slate-600 border border-slate-200 transition hover:bg-slate-50 hover:text-[#1a1a2e]"
+                      className="inline-flex items-center gap-1 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-slate-600 border border-slate-200 transition hover:bg-slate-50 hover:text-[#1a1a2e]"
                     >
+                      <IconCopy size={14} />
                       Copier
                     </button>
                   </div>
@@ -217,8 +219,9 @@ export default function XtreamDetailClient({ xtream }: { xtream: XtreamDetail })
             <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3">
               <button
                 onClick={() => void copyAllDetails()}
-                className="flex-1 rounded-xl bg-[#4169E1] px-6 py-3 text-sm sm:text-base font-semibold text-white transition hover:bg-[#3457c7] active:scale-[0.98] shadow-md shadow-[#4169E1]/20"
+                className="inline-flex items-center justify-center gap-2 flex-1 rounded-xl bg-[#4169E1] px-6 py-3 text-sm sm:text-base font-semibold text-white transition hover:bg-[#3457c7] active:scale-[0.98] shadow-md shadow-[#4169E1]/20"
               >
+                <IconCopy size={18} />
                 Copier toutes les informations
               </button>
               <Link

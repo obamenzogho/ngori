@@ -3,20 +3,22 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { IconMenu, IconX, IconNewspaper, IconMusic, IconRadio, IconMonitor, IconSmartphone } from './icons';
+
 export type ContentView = 'all' | 'playlists' | 'xtreamCodes' | 'macPortals' | 'appItems';
 
 interface NavItem {
   id: ContentView;
   label: string;
-  icon: string;
+  icon: React.ReactNode;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { id: 'all', label: 'Actualités', icon: '📰' },
-  { id: 'playlists', label: 'M3U', icon: '🎵' },
-  { id: 'xtreamCodes', label: 'Xtream', icon: '📡' },
-  { id: 'macPortals', label: 'Mac Portal', icon: '🖥️' },
-  { id: 'appItems', label: 'Applications', icon: '📱' },
+  { id: 'all', label: 'Actualités', icon: <IconNewspaper size={16} /> },
+  { id: 'playlists', label: 'M3U', icon: <IconMusic size={16} /> },
+  { id: 'xtreamCodes', label: 'Xtream', icon: <IconRadio size={16} /> },
+  { id: 'macPortals', label: 'Mac Portal', icon: <IconMonitor size={16} /> },
+  { id: 'appItems', label: 'Applications', icon: <IconSmartphone size={16} /> },
 ];
 
 interface NavbarProps {
@@ -80,13 +82,13 @@ export default function Navbar({ activeView, onViewChange }: NavbarProps) {
               <button
                 key={item.id}
                 onClick={() => goToView(item.id)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                   activeView === item.id
                     ? 'bg-[#4169E1] text-white shadow-md shadow-[#4169E1]/25'
                     : 'text-slate-600 hover:bg-slate-100 hover:text-[#1a1a2e]'
                 }`}
               >
-                <span className="mr-1.5">{item.icon}</span>
+                {item.icon}
                 {item.label}
               </button>
             ))}
@@ -95,23 +97,10 @@ export default function Navbar({ activeView, onViewChange }: NavbarProps) {
           {/* Mobile hamburger */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 -mr-2 rounded-lg hover:bg-slate-100 transition-colors"
+            className="md:hidden p-2 -mr-2 rounded-lg hover:bg-slate-100 transition-colors text-slate-600"
             aria-label={mobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              {mobileMenuOpen ? (
-                <>
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </>
-              ) : (
-                <>
-                  <line x1="3" y1="6" x2="21" y2="6" />
-                  <line x1="3" y1="12" x2="21" y2="12" />
-                  <line x1="3" y1="18" x2="21" y2="18" />
-                </>
-              )}
-            </svg>
+            {mobileMenuOpen ? <IconX size={24} /> : <IconMenu size={24} />}
           </button>
         </div>
       </div>
@@ -134,7 +123,7 @@ export default function Navbar({ activeView, onViewChange }: NavbarProps) {
                   : 'text-slate-600 hover:bg-slate-100 hover:text-[#1a1a2e]'
               }`}
             >
-              <span className="text-lg">{item.icon}</span>
+              {item.icon}
               {item.label}
             </button>
           ))}

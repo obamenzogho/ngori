@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 
 import AdBanner from './ad-banner';
 import Footer from './footer';
 import { formatDate } from './format-date';
+import { IconChevronRight, IconDocument } from './icons';
 import Navbar, { type ContentView } from './navbar';
 
 const VISITOR_FLAG = 'ngori_visited';
@@ -346,9 +347,7 @@ export default function HomePageClient({
                       )}
                       <span className="mt-4 inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[#4169E1] group-hover:gap-2.5 transition-all">
                         Voir les détails
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="9 18 15 12 9 6" />
-                        </svg>
+                        <IconChevronRight size={14} />
                       </span>
                     </Link>
                   );
@@ -397,9 +396,7 @@ export default function HomePageClient({
                         <span className="text-[10px] sm:text-xs text-slate-400">{formatDate(playlist.createdAt)}</span>
                         <span className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-[#4169E1] group-hover:gap-1.5 transition-all">
                           Voir
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="9 18 15 12 9 6" />
-                          </svg>
+                          <IconChevronRight size={12} />
                         </span>
                       </div>
                     </div>
@@ -463,9 +460,7 @@ export default function HomePageClient({
                       <span className="text-[10px] sm:text-xs text-slate-400">{formatDate(code.createdAt)}</span>
                       <span className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-[#4169E1] group-hover:gap-1.5 transition-all">
                         Voir
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="9 18 15 12 9 6" />
-                        </svg>
+                        <IconChevronRight size={12} />
                       </span>
                     </div>
                   </Link>
@@ -522,9 +517,7 @@ export default function HomePageClient({
                       <span className="text-[10px] sm:text-xs text-slate-400">{formatDate(portal.createdAt)}</span>
                       <span className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-[#4169E1] group-hover:gap-1.5 transition-all">
                         Voir
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="9 18 15 12 9 6" />
-                        </svg>
+                        <IconChevronRight size={12} />
                       </span>
                     </div>
                   </Link>
@@ -577,10 +570,7 @@ export default function HomePageClient({
             <section className="py-16 sm:py-20 text-center animate-fade-in">
               <div className="mx-auto max-w-md">
                 <div className="mx-auto mb-4 h-16 w-16 rounded-2xl bg-slate-100 flex items-center justify-center">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
-                    <polyline points="13 2 13 9 20 9" />
-                  </svg>
+                  <IconDocument size={28} className="text-slate-400" />
                 </div>
                 <h3 className="text-xl sm:text-2xl font-bold text-[#1a1a2e] mb-2">Aucun contenu</h3>
                 <p className="text-sm sm:text-base text-slate-500">
