@@ -1,7 +1,6 @@
 'use client';
 
 import AdBanner from './ad-banner';
-import AdBlockDetector from './ad-block-detector';
 import AdScripts from './ad-scripts';
 
 export default function Footer() {
@@ -9,9 +8,6 @@ export default function Footer() {
     <>
       {/* Ad scripts — only loaded on public pages (Footer is not used on admin) */}
       <AdScripts />
-
-      {/* Ad block detector — covers entire page if blocker detected */}
-      <AdBlockDetector />
 
       <footer className="mt-auto border-t border-slate-200/60 bg-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">

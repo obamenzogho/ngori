@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import AdBlockDetector from "./components/AdBlockDetector";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -29,7 +30,9 @@ export default function RootLayout({
     >
       <head />
       <body className="min-h-full flex flex-col bg-[#F5F7FF] text-[#1a1a2e]">
-        {children}
+        <AdBlockDetector disabled={process.env.NODE_ENV === 'development'}>
+          {children}
+        </AdBlockDetector>
       </body>
     </html>
   );
