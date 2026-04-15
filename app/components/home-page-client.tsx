@@ -270,37 +270,42 @@ export default function HomePageClient({
     const retryTimer = setTimeout(pushAdSenseAds, 2000);
     const retryTimer2 = setTimeout(pushAdSenseAds, 5000);
 
-    // Configure atOptions for banner (responsive - adapts to screen size)
-    const updateAtOptions = () => {
-      const isWideScreen = window.innerWidth >= 728;
-      window.atOptions = {
-        key: '3c1573cf88699be69e51c3767ebdd818',
-        format: 'iframe',
-        height: isWideScreen ? 90 : 50,
-        width: isWideScreen ? 728 : 320,
-        params: {},
-      };
+    // Configure atOptions for banner — responsive, no screen-width condition
+    window.atOptions = {
+      key: '3c1573cf88699be69e51c3767ebdd818',
+      format: 'iframe',
+      height: 90,
+      width: 728,
+      params: {},
     };
-    updateAtOptions();
 
-    // Load banner script only after the container exists in the DOM
-    const bannerContainer = document.getElementById('banner-728x90');
-    if (bannerContainer) {
-      const bannerScript = document.createElement('script');
-      bannerScript.src = 'https://www.highperformanceformat.com/3c1573cf88699be69e51c3767ebdd818/invoke.js';
-      bannerScript.async = true;
-      bannerContainer.appendChild(bannerScript);
-    }
+    // Load banner script (with retry for slow mobile connections)
+    const loadBannerScript = () => {
+      const bannerContainer = document.getElementById('banner-728x90');
+      if (bannerContainer && !bannerContainer.querySelector('script[src*="highperformanceformat"]')) {
+        const bannerScript = document.createElement('script');
+        bannerScript.src = 'https://www.highperformanceformat.com/3c1573cf88699be69e51c3767ebdd818/invoke.js';
+        bannerScript.async = true;
+        bannerScript.setAttribute('data-cfasync', 'false');
+        bannerContainer.appendChild(bannerScript);
+      }
+    };
+    loadBannerScript();
+    const bannerRetry = setTimeout(loadBannerScript, 3000);
 
-    // Load native banner script only after its container exists
-    const nativeContainer = document.getElementById('container-3b8b394af5e5faeda0898b04416b8c81');
-    if (nativeContainer) {
-      const nativeScript = document.createElement('script');
-      nativeScript.async = true;
-      nativeScript.setAttribute('data-cfasync', 'false');
-      nativeScript.src = 'https://pl29139985.profitablecpmratenetwork.com/3b8b394af5e5faeda0898b04416b8c81/invoke.js';
-      nativeContainer.appendChild(nativeScript);
-    }
+    // Load native banner script (with retry for slow mobile connections)
+    const loadNativeScript = () => {
+      const nativeContainer = document.getElementById('container-3b8b394af5e5faeda0898b04416b8c81');
+      if (nativeContainer && !nativeContainer.querySelector('script[src*="profitablecpmratenetwork"]')) {
+        const nativeScript = document.createElement('script');
+        nativeScript.async = true;
+        nativeScript.setAttribute('data-cfasync', 'false');
+        nativeScript.src = 'https://pl29139985.profitablecpmratenetwork.com/3b8b394af5e5faeda0898b04416b8c81/invoke.js';
+        nativeContainer.appendChild(nativeScript);
+      }
+    };
+    loadNativeScript();
+    const nativeRetry = setTimeout(loadNativeScript, 3000);
 
     // Configure Adsterra placements
     if (typeof window._atws !== 'object') {
@@ -315,6 +320,8 @@ export default function HomePageClient({
     return () => {
       clearTimeout(retryTimer);
       clearTimeout(retryTimer2);
+      clearTimeout(bannerRetry);
+      clearTimeout(nativeRetry);
     };
   }, [pushAdSenseAds]);
 
@@ -471,8 +478,8 @@ export default function HomePageClient({
 
       {/* ─── AD BANNER (responsive) ─── */}
       <div className="w-full flex justify-center">
-        <div className="w-full max-w-[728px] mx-auto px-2 sm:px-4">
-          <div id="banner-728x90"></div>
+        <div className="w-full mx-auto px-2 sm:px-4">
+          <div id="banner-728x90" className="min-h-[50px] sm:min-h-[90px]"></div>
         </div>
       </div>
 
@@ -802,10 +809,10 @@ export default function HomePageClient({
       {/* ─── FOOTER ─── */}
       <footer className="mt-8 sm:mt-10 md:mt-16 border-t border-slate-700 bg-slate-900/95">
         <div className="mx-auto max-w-7xl px-3 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-8">
-          <div className="mb-6 sm:mb-8 text-center overflow-hidden">
+          <div className="mb-6 sm:mb-8 text-center">
             <div id="adsterra-home-footer-banner"></div>
           </div>
-          <div className="mb-6 sm:mb-8 text-center overflow-hidden">
+          <div className="mb-6 sm:mb-8 text-center">
             <div id="container-3b8b394af5e5faeda0898b04416b8c81"></div>
           </div>
           <div className="text-center text-xs sm:text-sm text-slate-400">
