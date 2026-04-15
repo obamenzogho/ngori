@@ -7,49 +7,44 @@ import { IconShieldOff } from './icons';
 
 /**
  * Detects ad blockers by creating a bait element that ad blockers typically hide.
- * Returns true if an ad blocker is detected.
+ * Uses a two-step delay: 1000ms to let real ad scripts load, then 300ms for the
+ * blocker to act on the bait element. This avoids false positives from slow-loading
+ * scripts or network errors on fake script tags.
+ * Returns true only if an ad blocker is genuinely active.
  */
-function detectAdBlock(): Promise<boolean> {
+function detectAdBlocker(): Promise<boolean> {
   return new Promise((resolve) => {
-    // Strategy 1: Create a bait element that ad blockers hide
-    const bait = document.createElement('div');
-    bait.id = 'ad-banner';
-    bait.className = 'ad-placement ad_banner adbox pub_300x250 pub_300x250m pub_728x90 text-ad textAd text_ad text_ads text-ads ad-text';
-    bait.style.cssText = 'position:absolute!important;left:-9999px!important;top:-9999px!important;width:1px!important;height:1px!important;';
-    bait.innerHTML = '&nbsp;';
-    document.body.appendChild(bait);
-
-    // Strategy 2: Create a fake script that ad blockers block
-    const fakeScript = document.createElement('script');
-    fakeScript.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js';
-    fakeScript.async = true;
-
-    let scriptBlocked = false;
-    fakeScript.onerror = () => {
-      scriptBlocked = true;
-    };
-
-    document.body.appendChild(fakeScript);
-
-    // Check after a short delay
+    // Wait 1 second for the page and real ad scripts to fully load
     setTimeout(() => {
-      const baitHidden =
-        bait.offsetParent === null ||
-        bait.offsetHeight === 0 ||
-        bait.offsetLeft < 0 ||
-        bait.offsetTop < 0 ||
-        bait.clientWidth === 0 ||
-        bait.clientHeight === 0 ||
-        getComputedStyle(bait).display === 'none' ||
-        getComputedStyle(bait).visibility === 'hidden' ||
-        getComputedStyle(bait).opacity === '0';
+      // Create a bait element that simulates an ad
+      const testAd = document.createElement('div');
+      testAd.innerHTML = '&nbsp;';
+      testAd.className = 'adsbox ad-banner pub_300x250';
+      testAd.style.cssText = `
+        position: absolute;
+        left: -9999px;
+        width: 1px;
+        height: 1px;
+      `;
+      document.body.appendChild(testAd);
 
-      // Clean up
-      bait.remove();
-      fakeScript.remove();
+      // Wait 300ms for the blocker to act on the bait element
+      setTimeout(() => {
+        const isBlocked =
+          testAd.offsetHeight === 0 ||
+          testAd.offsetWidth === 0 ||
+          testAd.style.display === 'none' ||
+          testAd.style.visibility === 'hidden' ||
+          !document.body.contains(testAd);
 
-      resolve(baitHidden || scriptBlocked);
-    }, 500);
+        // Clean up
+        if (document.body.contains(testAd)) {
+          document.body.removeChild(testAd);
+        }
+
+        resolve(isBlocked);
+      }, 300);
+    }, 1000);
   });
 }
 
@@ -66,13 +61,14 @@ export default function AdBlockDetector() {
     setChecking(true);
     setError(false);
     try {
-      const isBlocked = await detectAdBlock();
+      const isBlocked = await detectAdBlocker();
       setBlocked(isBlocked);
       if (!isBlocked) {
         setError(false);
       }
     } catch {
-      setBlocked(true);
+      // On error, don't assume blocker — safer default
+      setBlocked(false);
     } finally {
       setChecking(false);
     }
@@ -80,9 +76,9 @@ export default function AdBlockDetector() {
 
   useEffect(() => {
     if (isAdmin) return;
-    // Run detection after a short delay to allow scripts to load
-    const timer = setTimeout(check, 1500);
-    return () => clearTimeout(timer);
+    // detectAdBlocker already has a 1000ms internal delay,
+    // so we call it directly without an additional setTimeout
+    void check();
   }, [isAdmin, check, pathname]);
 
   const handleRetry = async () => {
