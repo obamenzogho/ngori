@@ -6,17 +6,17 @@ import { usePathname } from 'next/navigation';
 import { IconShieldOff } from './icons';
 
 /**
- * Detects ad blockers by testing whether Adsterra and Monetag scripts are
- * being blocked. Uses a two-pronged approach:
+ * Detects ad blockers using two complementary checks that target only
+ * Adsterra and Monetag — the two ad networks still in use:
  *
  * 1. **Bait element** — a hidden div with class names that ad blockers
- *    typically target (adsbox, ad-banner). If the blocker hides or removes
- *    it, we know a blocker is active.
+ *    typically target (adsbox, ad-banner). If the blocker hides or
+ *    removes it, a blocker is likely active.
  *
- * 2. **Script reachability** — attempts to create a <script> element
- *    pointing to the Adsterra CDN. If the browser fires an `error` event
- *    on that script tag (request blocked at the network level), the
- *    blocker is confirmed.
+ * 2. **Adsterra script presence** — checks whether the Adsterra core
+ *    script injected by `<AdScripts />` actually loaded. If the
+ *    `<script src="cdn.adsterra.com">` tag is missing from the DOM or
+ *    the `_atws` global was never initialised, the script was blocked.
  *
  * A 1.5 s initial delay gives the real Adsterra/Monetag scripts time to
  * load, and a 300 ms secondary delay lets the blocker act on the bait.
@@ -26,8 +26,6 @@ function detectAdBlocker(): Promise<boolean> {
   return new Promise((resolve) => {
     // Wait for real Adsterra/Monetag scripts to load first
     setTimeout(() => {
-      let resolved = false;
-
       // ── Check 1: Bait element ──
       const testAd = document.createElement('div');
       testAd.innerHTML = '&nbsp;';
@@ -53,49 +51,28 @@ function detectAdBlocker(): Promise<boolean> {
           document.body.removeChild(testAd);
         }
 
-        if (!resolved) {
-          resolved = true;
-          resolve(baitBlocked);
-        }
+        // ── Check 2: Adsterra script presence ──
+        // Look for the Adsterra core script tag that <AdScripts /> injects.
+        // If it's missing from the DOM, the blocker stripped it out.
+        const adsterraScript = document.querySelector(
+          'script[src*="cdn.adsterra.com"]',
+        );
+        const adsterraScriptBlocked = !adsterraScript;
+
+        // ── Check 3: Monetag script presence ──
+        const monetagScript = document.querySelector(
+          'script[src*="quge5.com"]',
+        );
+        const monetagScriptBlocked = !monetagScript;
+
+        // A blocker is detected if:
+        // - The bait element was hidden/removed, OR
+        // - Both Adsterra AND Monetag script tags are missing (stripped by blocker)
+        const isBlocked =
+          baitBlocked || (adsterraScriptBlocked && monetagScriptBlocked);
+
+        resolve(isBlocked);
       }, 300);
-
-      // ── Check 2: Adsterra script reachability ──
-      const testScript = document.createElement('script');
-      testScript.src = 'https://cdn.adsterra.com/core.min.js';
-      testScript.async = true;
-
-      testScript.addEventListener('error', () => {
-        // Script request was blocked at network level
-        if (!resolved) {
-          resolved = true;
-          resolve(true);
-        }
-        // Clean up
-        if (testScript.parentNode) {
-          testScript.parentNode.removeChild(testScript);
-        }
-      });
-
-      testScript.addEventListener('load', () => {
-        // Script loaded — no blocker for Adsterra
-        // Don't resolve yet; wait for bait check too
-        if (testScript.parentNode) {
-          testScript.parentNode.removeChild(testScript);
-        }
-      });
-
-      document.head.appendChild(testScript);
-
-      // Safety timeout — if neither check resolved, assume no blocker
-      setTimeout(() => {
-        if (!resolved) {
-          resolved = true;
-          resolve(false);
-        }
-        if (testScript.parentNode) {
-          testScript.parentNode.removeChild(testScript);
-        }
-      }, 2500);
     }, 1500);
   });
 }
