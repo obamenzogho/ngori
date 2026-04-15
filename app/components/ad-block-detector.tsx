@@ -6,20 +6,32 @@ import { usePathname } from 'next/navigation';
 import { IconShieldOff } from './icons';
 
 /**
- * Detects ad blockers by creating a bait element that ad blockers typically hide.
- * Uses a two-step delay: 1000ms to let real ad scripts load, then 300ms for the
- * blocker to act on the bait element. This avoids false positives from slow-loading
- * scripts or network errors on fake script tags.
+ * Detects ad blockers by testing whether Adsterra and Monetag scripts are
+ * being blocked. Uses a two-pronged approach:
+ *
+ * 1. **Bait element** — a hidden div with class names that ad blockers
+ *    typically target (adsbox, ad-banner). If the blocker hides or removes
+ *    it, we know a blocker is active.
+ *
+ * 2. **Script reachability** — attempts to create a <script> element
+ *    pointing to the Adsterra CDN. If the browser fires an `error` event
+ *    on that script tag (request blocked at the network level), the
+ *    blocker is confirmed.
+ *
+ * A 1.5 s initial delay gives the real Adsterra/Monetag scripts time to
+ * load, and a 300 ms secondary delay lets the blocker act on the bait.
  * Returns true only if an ad blocker is genuinely active.
  */
 function detectAdBlocker(): Promise<boolean> {
   return new Promise((resolve) => {
-    // Wait 1 second for the page and real ad scripts to fully load
+    // Wait for real Adsterra/Monetag scripts to load first
     setTimeout(() => {
-      // Create a bait element that simulates an ad
+      let resolved = false;
+
+      // ── Check 1: Bait element ──
       const testAd = document.createElement('div');
       testAd.innerHTML = '&nbsp;';
-      testAd.className = 'adsbox ad-banner pub_300x250';
+      testAd.className = 'adsbox ad-banner';
       testAd.style.cssText = `
         position: absolute;
         left: -9999px;
@@ -28,23 +40,63 @@ function detectAdBlocker(): Promise<boolean> {
       `;
       document.body.appendChild(testAd);
 
-      // Wait 300ms for the blocker to act on the bait element
       setTimeout(() => {
-        const isBlocked =
+        const baitBlocked =
           testAd.offsetHeight === 0 ||
           testAd.offsetWidth === 0 ||
           testAd.style.display === 'none' ||
           testAd.style.visibility === 'hidden' ||
           !document.body.contains(testAd);
 
-        // Clean up
+        // Clean up bait
         if (document.body.contains(testAd)) {
           document.body.removeChild(testAd);
         }
 
-        resolve(isBlocked);
+        if (!resolved) {
+          resolved = true;
+          resolve(baitBlocked);
+        }
       }, 300);
-    }, 1000);
+
+      // ── Check 2: Adsterra script reachability ──
+      const testScript = document.createElement('script');
+      testScript.src = 'https://cdn.adsterra.com/core.min.js';
+      testScript.async = true;
+
+      testScript.addEventListener('error', () => {
+        // Script request was blocked at network level
+        if (!resolved) {
+          resolved = true;
+          resolve(true);
+        }
+        // Clean up
+        if (testScript.parentNode) {
+          testScript.parentNode.removeChild(testScript);
+        }
+      });
+
+      testScript.addEventListener('load', () => {
+        // Script loaded — no blocker for Adsterra
+        // Don't resolve yet; wait for bait check too
+        if (testScript.parentNode) {
+          testScript.parentNode.removeChild(testScript);
+        }
+      });
+
+      document.head.appendChild(testScript);
+
+      // Safety timeout — if neither check resolved, assume no blocker
+      setTimeout(() => {
+        if (!resolved) {
+          resolved = true;
+          resolve(false);
+        }
+        if (testScript.parentNode) {
+          testScript.parentNode.removeChild(testScript);
+        }
+      }, 2500);
+    }, 1500);
   });
 }
 
@@ -76,7 +128,7 @@ export default function AdBlockDetector() {
 
   useEffect(() => {
     if (isAdmin) return;
-    // detectAdBlocker already has a 1000ms internal delay,
+    // detectAdBlocker already has a 1500ms internal delay,
     // so we call it directly without an additional setTimeout
     void check();
   }, [isAdmin, check, pathname]);

@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 
-import AdBanner from './ad-banner';
 import Footer from './footer';
 import { formatDate } from './format-date';
 import { IconChevronRight, IconDocument } from './icons';
@@ -240,9 +239,6 @@ export default function HomePageClient({
     <div className="min-h-screen flex flex-col bg-[#F5F7FF]">
       <Navbar activeView={activeView} onViewChange={setActiveView} />
 
-      {/* Header Ad Banner */}
-      <AdBanner variant="header" />
-
       {/* Main Content */}
       <main className="flex-1 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 md:py-12">
         {/* Welcome section */}
@@ -468,9 +464,6 @@ export default function HomePageClient({
               </div>
             </section>
           )}
-
-          {/* ─── AD ─── */}
-          <AdBanner variant="fluid" />
 
           {/* ─── MAC PORTALS ─── */}
           {showMacPortals && macPortals.length > 0 && (

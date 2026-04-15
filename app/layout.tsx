@@ -27,9 +27,7 @@ export default function RootLayout({
       lang="fr"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <head>
-        <meta name="google-adsense-account" content="ca-pub-6216012186493058" />
-      </head>
+      <head />
       <body className="min-h-full flex flex-col bg-[#F5F7FF] text-[#1a1a2e]">
         {children}
       </body>

@@ -43,26 +43,12 @@ body {
 }
 
 /* Ad containers — responsive, no overflow hidden */
-#adsterra-home-footer-banner,
-#container-3b8b394af5e5faeda0898b04416b8c81 {
+#adsterra-home-footer-banner {
   min-height: 90px;
   width: 100%;
 }
 
-#banner-728x90 {
-  min-height: 50px;
-  width: 100%;
-}
-
-@media (min-width: 728px) {
-  #banner-728x90 {
-    min-height: 90px;
-  }
-}
-
-#adsterra-home-footer-banner iframe,
-#container-3b8b394af5e5faeda0898b04416b8c81 iframe,
-#banner-728x90 iframe {
+#adsterra-home-footer-banner iframe {
   max-width: 100% !important;
   height: auto !important;
 }

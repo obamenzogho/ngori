@@ -17,7 +17,6 @@ export default function Footer() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
           {/* Ad slots */}
           <AdBanner variant="adsterra-footer" />
-          <AdBanner variant="native-footer" />
 
           {/* Footer content */}
           <div className="text-center">
