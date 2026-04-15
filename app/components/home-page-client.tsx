@@ -110,13 +110,6 @@ const NAV_ITEMS: Array<{ id: ContentView; label: string; icon: string }> = [
   { id: 'appItems', label: 'Applications', icon: '📱' },
 ];
 
-function slugify(value: string) {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
-
 function formatDate(value?: string) {
   if (!value) {
     return 'Date inconnue';
@@ -391,12 +384,6 @@ export default function HomePageClient({
     }, 50);
   }, []);
 
-  const showNotice = (message: string, tone: Notice['tone']) => {
-    setNotice({ message, tone });
-  };
-
-
-
   const showPlaylists = activeView === 'all' || activeView === 'playlists';
   const showXtream = activeView === 'all' || activeView === 'xtreamCodes';
   const showMacPortals = activeView === 'all' || activeView === 'macPortals';
@@ -483,9 +470,9 @@ export default function HomePageClient({
       </header>
 
       {/* ─── AD BANNER (responsive) ─── */}
-      <div className="w-full py-2 sm:py-3 md:py-4 flex justify-center border-b border-slate-800/50 bg-slate-900/30">
+      <div className="w-full flex justify-center">
         <div className="w-full max-w-[728px] mx-auto px-2 sm:px-4">
-          <div id="banner-728x90" className="min-h-[50px] sm:min-h-[90px]"></div>
+          <div id="banner-728x90"></div>
         </div>
       </div>
 
@@ -678,11 +665,11 @@ export default function HomePageClient({
           )}
 
           {/* ─── AD - Fluid ─── */}
-          <div className="my-6 sm:my-8 py-3 sm:py-4 border-y border-slate-700/50">
+          <div className="my-6 sm:my-8">
             <div className="mx-auto max-w-4xl px-2 sm:px-4">
               <ins
                 className="adsbygoogle"
-                style={{ display: 'block', width: '100%', minHeight: '50px' }}
+                style={{ display: 'block', width: '100%' }}
                 data-ad-client="ca-pub-6216012186493058"
                 data-ad-slot="1234567892"
                 data-ad-format="auto"
@@ -740,11 +727,11 @@ export default function HomePageClient({
           )}
 
           {/* ─── AD - Fluid ─── */}
-          <div className="my-6 sm:my-8 py-3 sm:py-4 border-y border-slate-700/50">
+          <div className="my-6 sm:my-8">
             <div className="mx-auto max-w-4xl px-2 sm:px-4">
               <ins
                 className="adsbygoogle"
-                style={{ display: 'block', width: '100%', minHeight: '50px' }}
+                style={{ display: 'block', width: '100%' }}
                 data-ad-client="ca-pub-6216012186493058"
                 data-ad-slot="1234567893"
                 data-ad-format="auto"
@@ -815,10 +802,10 @@ export default function HomePageClient({
       {/* ─── FOOTER ─── */}
       <footer className="mt-8 sm:mt-10 md:mt-16 border-t border-slate-700 bg-slate-900/95">
         <div className="mx-auto max-w-7xl px-3 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-8">
-          <div className="mb-6 sm:mb-8 rounded-lg border border-slate-700 bg-slate-800/50 p-3 sm:p-4 text-center overflow-hidden">
+          <div className="mb-6 sm:mb-8 text-center overflow-hidden">
             <div id="adsterra-home-footer-banner"></div>
           </div>
-          <div className="mb-6 sm:mb-8 rounded-lg border border-slate-700 bg-slate-800/50 p-3 sm:p-4 text-center overflow-hidden">
+          <div className="mb-6 sm:mb-8 text-center overflow-hidden">
             <div id="container-3b8b394af5e5faeda0898b04416b8c81"></div>
           </div>
           <div className="text-center text-xs sm:text-sm text-slate-400">

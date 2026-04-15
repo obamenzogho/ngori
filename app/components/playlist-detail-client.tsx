@@ -175,6 +175,7 @@ export default function PlaylistDetailClient({ playlist }: { playlist: PlaylistD
             </div>
 
             {/* Content preview */}
+            {playlist.content && playlist.content.trim() && (
             <div className="mt-6 sm:mt-8">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm sm:text-base font-semibold text-slate-200">Apercu du contenu M3U</h3>
@@ -201,6 +202,7 @@ export default function PlaylistDetailClient({ playlist }: { playlist: PlaylistD
                 )}
               </div>
             </div>
+            )}
 
             {/* Actions */}
             <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3">
