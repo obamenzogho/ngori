@@ -1,0 +1,501 @@
+'use client';
+
+import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+
+type Period = 'today' | '7d' | '30d' | '12m' | 'year';
+
+interface KpiData {
+  value: number;
+  change: number;
+}
+
+interface OverviewData {
+  period: string;
+  kpis: {
+    visitors: KpiData;
+    uniqueVisitors: KpiData;
+    pageViews: KpiData;
+    clicks: KpiData;
+    downloads: KpiData;
+  };
+  topPages: { page: string; views: number; avgTimeOnPage: number }[];
+  topClicks: { element: string; label: string; clicks: number; percentage: number }[];
+  deviceBreakdown: Record<string, number>;
+  countryBreakdown: { country: string; visitors: number; percentage: number }[];
+  topSearches: { query: string; count: number }[];
+  adPerformance: {
+    impressions: number;
+    clicks: number;
+    blockRate: number;
+  };
+}
+
+interface VisitorsData {
+  visitorsOverTime: { date: string; visitors: number; uniqueVisitors: number }[];
+  pageViewsOverTime: { date: string; pageViews: number }[];
+  clicksOverTime: { date: string; clicks: number }[];
+}
+
+const PERIOD_LABELS: Record<Period, string> = {
+  today: "Aujourd'hui",
+  '7d': '7 jours',
+  '30d': '30 jours',
+  '12m': '12 mois',
+  year: 'Cette année',
+};
+
+const COUNTRY_FLAGS: Record<string, string> = {
+  GA: '🇬🇦', CI: '🇨🇮', FR: '🇫🇷', CM: '🇨🇲', SN: '🇸🇳',
+  ML: '🇲🇱', BF: '🇧🇫', NE: '🇳🇪', TG: '🇹🇬', BJ: '🇧🇯',
+  GN: '🇬🇳', TD: '🇹🇩', CF: '🇨🇫', CG: '🇨🇬', CD: '🇨🇩',
+  MG: '🇲🇬', US: '🇺🇸', GB: '🇬🇧', DE: '🇩🇪', IT: '🇮🇹',
+  ES: '🇪🇸', PT: '🇵🇹', BE: '🇧🇪', CH: '🇨🇭', CA: '🇨🇦',
+  MA: '🇲🇦', TN: '🇹🇳', DZ: '🇩🇿', NG: '🇳🇬', KE: '🇰🇪',
+};
+
+function formatNumber(n: number): string {
+  if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
+  if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
+  return n.toString();
+}
+
+function formatTime(seconds: number): string {
+  if (!seconds) return '—';
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}m ${s}s`;
+}
+
+function ChangeIndicator({ change }: { change: number }) {
+  if (change === 0) return <span className="text-slate-400">0%</span>;
+  return (
+    <span className={`flex items-center gap-1 text-sm font-semibold ${change > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+      {change > 0 ? '↑' : '↓'} {Math.abs(change)}%
+    </span>
+  );
+}
+
+export default function AnalyticsDashboard() {
+  const router = useRouter();
+  const [period, setPeriod] = useState<Period>('7d');
+  const [overview, setOverview] = useState<OverviewData | null>(null);
+  const [visitors, setVisitors] = useState<VisitorsData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [activeChart, setActiveChart] = useState<'visitors' | 'pageviews' | 'clicks'>('visitors');
+
+  useEffect(() => {
+    async function loadData() {
+      setLoading(true);
+      try {
+        const [overviewRes, visitorsRes] = await Promise.all([
+          fetch(`/api/analytics/overview?period=${period}`),
+          fetch(`/api/analytics/visitors?period=${period}&groupBy=${period === 'today' ? 'hour' : 'day'}`),
+        ]);
+
+        if (overviewRes.status === 401 || visitorsRes.status === 401) {
+          router.push('/admin/login');
+          return;
+        }
+
+        if (overviewRes.ok) {
+          setOverview(await overviewRes.json());
+        }
+        if (visitorsRes.ok) {
+          setVisitors(await visitorsRes.json());
+        }
+      } catch (err) {
+        console.error('Failed to load analytics:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    void loadData();
+  }, [period, router]);
+
+  const handleExportCsv = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/analytics/overview?period=${period}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `analytics-${period}-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      // silently fail
+    }
+  }, [period]);
+
+  // Chart data
+  const chartData = visitors
+    ? activeChart === 'visitors'
+      ? visitors.visitorsOverTime
+      : activeChart === 'pageviews'
+        ? visitors.pageViewsOverTime
+        : visitors.clicksOverTime
+    : [];
+
+  const chartMax = chartData.length > 0
+    ? Math.max(...chartData.map((d: { visitors?: number; pageViews?: number; clicks?: number; uniqueVisitors?: number }) =>
+        d.visitors || d.pageViews || d.clicks || 0
+      ))
+    : 1;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-white" />
+          <p className="text-slate-400">Chargement des statistiques...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {/* Header */}
+      <header className="sticky top-0 z-50 border-b border-slate-700 bg-slate-900/95 backdrop-blur">
+        <div className="container mx-auto flex items-center justify-between px-4 py-4">
+          <div>
+            <h1 className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-3xl font-bold text-transparent">
+              📊 Analytics
+            </h1>
+            <p className="mt-1 text-sm text-slate-400">
+              Suivi et analyse du trafic en temps réel
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleExportCsv}
+              className="rounded-lg border border-slate-600 px-4 py-2 text-sm text-slate-200 transition hover:border-slate-400"
+            >
+              📥 Exporter
+            </button>
+            <Link
+              href="/admin/dashboard"
+              className="rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700"
+            >
+              ← Dashboard
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-8">
+        {/* Period selector */}
+        <div className="mb-8 flex flex-wrap gap-2">
+          {(Object.keys(PERIOD_LABELS) as Period[]).map((p) => (
+            <button
+              key={p}
+              onClick={() => setPeriod(p)}
+              className={`rounded-lg px-5 py-2 text-sm font-semibold transition ${
+                period === p
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+              }`}
+            >
+              {PERIOD_LABELS[p]}
+            </button>
+          ))}
+        </div>
+
+        {overview && (
+          <>
+            {/* Section 1 — KPIs */}
+            <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+              {[
+                { label: 'Visiteurs', key: 'visitors' as const, icon: '👥' },
+                { label: 'Visiteurs uniques', key: 'uniqueVisitors' as const, icon: '👤' },
+                { label: 'Pages vues', key: 'pageViews' as const, icon: '📄' },
+                { label: 'Clics', key: 'clicks' as const, icon: '👆' },
+                { label: 'Téléchargements', key: 'downloads' as const, icon: '📥' },
+              ].map(({ label, key, icon }) => (
+                <div
+                  key={key}
+                  className="rounded-xl border border-slate-700 bg-slate-800/60 p-5 backdrop-blur"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl">{icon}</span>
+                    <ChangeIndicator change={overview.kpis[key].change} />
+                  </div>
+                  <p className="mt-3 text-3xl font-bold text-white">
+                    {formatNumber(overview.kpis[key].value)}
+                  </p>
+                  <p className="mt-1 text-sm text-slate-400">{label}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Section 2 — Charts */}
+            <div className="mb-8 rounded-xl border border-slate-700 bg-slate-800/60 p-6 backdrop-blur">
+              <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <h2 className="text-lg font-bold text-white">Évolution temporelle</h2>
+                <div className="flex gap-2">
+                  {[
+                    { key: 'visitors' as const, label: 'Visiteurs' },
+                    { key: 'pageviews' as const, label: 'Pages vues' },
+                    { key: 'clicks' as const, label: 'Clics' },
+                  ].map(({ key, label }) => (
+                    <button
+                      key={key}
+                      onClick={() => setActiveChart(key)}
+                      className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
+                        activeChart === key
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Simple bar chart */}
+              <div className="flex h-64 items-end gap-1 overflow-x-auto pb-2">
+                {chartData.map((item, i) => {
+                  const value = (item as Record<string, unknown>).visitors || (item as Record<string, unknown>).pageViews || (item as Record<string, unknown>).clicks || 0;
+                  const height = chartMax > 0 ? (Number(value) / chartMax) * 100 : 0;
+                  const dateLabel = item.date?.slice(-5) || `${i}`;
+
+                  return (
+                    <div
+                      key={i}
+                      className="group relative flex min-w-[24px] flex-1 flex-col items-center"
+                    >
+                      <div className="absolute -top-8 hidden rounded bg-slate-900 px-2 py-1 text-xs text-white group-hover:block">
+                        {formatNumber(Number(value))}
+                      </div>
+                      <div
+                        className="w-full rounded-t bg-gradient-to-t from-blue-600 to-cyan-400 transition-all duration-200 hover:from-blue-500 hover:to-cyan-300"
+                        style={{ height: `${Math.max(height, 2)}%` }}
+                      />
+                      <span className="mt-2 text-[10px] text-slate-500">{dateLabel}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              {chartData.length === 0 && (
+                <div className="flex h-64 items-center justify-center text-slate-400">
+                  Aucune donnée pour cette période
+                </div>
+              )}
+            </div>
+
+            <div className="grid gap-8 lg:grid-cols-2">
+              {/* Section 3 — Top Clicks */}
+              <div className="rounded-xl border border-slate-700 bg-slate-800/60 p-6 backdrop-blur">
+                <h2 className="mb-4 text-lg font-bold text-white">👆 Clics les plus fréquents</h2>
+                {overview.topClicks.length === 0 ? (
+                  <p className="text-sm text-slate-400">Aucun clic enregistré</p>
+                ) : (
+                  <div className="space-y-3">
+                    {overview.topClicks.map((click, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center gap-3 rounded-lg border border-slate-700 bg-slate-900/40 px-4 py-3"
+                      >
+                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
+                          {i + 1}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <p className="truncate text-sm font-medium text-white">
+                            {click.label || click.element}
+                          </p>
+                          <p className="text-xs text-slate-400">{click.element}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-bold text-white">{formatNumber(click.clicks)}</p>
+                          <p className="text-xs text-slate-400">{click.percentage}%</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Section 4 — Top Pages */}
+              <div className="rounded-xl border border-slate-700 bg-slate-800/60 p-6 backdrop-blur">
+                <h2 className="mb-4 text-lg font-bold text-white">📄 Pages les plus visitées</h2>
+                {overview.topPages.length === 0 ? (
+                  <p className="text-sm text-slate-400">Aucune page visitée</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-slate-700 text-xs text-slate-400">
+                          <th className="pb-2 text-left">Page</th>
+                          <th className="pb-2 text-right">Vues</th>
+                          <th className="pb-2 text-right">Temps moyen</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {overview.topPages.map((page, i) => (
+                          <tr key={i} className="border-b border-slate-700/50">
+                            <td className="py-2 text-white">{page.page}</td>
+                            <td className="py-2 text-right text-slate-200">{formatNumber(page.views)}</td>
+                            <td className="py-2 text-right text-slate-300">{formatTime(page.avgTimeOnPage)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+              {/* Section 5 — Device Breakdown */}
+              <div className="rounded-xl border border-slate-700 bg-slate-800/60 p-6 backdrop-blur">
+                <h2 className="mb-4 text-lg font-bold text-white">📱 Répartition des appareils</h2>
+                {(() => {
+                  const total = Object.values(overview.deviceBreakdown).reduce((a, b) => a + b, 0);
+                  if (total === 0) return <p className="text-sm text-slate-400">Aucune donnée</p>;
+
+                  const devices = [
+                    { key: 'desktop', label: 'Desktop', icon: '🖥️', color: 'bg-blue-500' },
+                    { key: 'mobile', label: 'Mobile', icon: '📱', color: 'bg-emerald-500' },
+                    { key: 'tablet', label: 'Tablette', icon: '📟', color: 'bg-amber-500' },
+                  ];
+
+                  return (
+                    <div className="space-y-4">
+                      {/* Bar */}
+                      <div className="flex h-8 overflow-hidden rounded-full">
+                        {devices.map(({ key, color }) => {
+                          const count = overview.deviceBreakdown[key] || 0;
+                          const pct = total > 0 ? (count / total) * 100 : 0;
+                          return pct > 0 ? (
+                            <div
+                              key={key}
+                              className={`${color} flex items-center justify-center text-xs font-bold text-white transition-all`}
+                              style={{ width: `${pct}%` }}
+                            >
+                              {pct >= 10 ? `${Math.round(pct)}%` : ''}
+                            </div>
+                          ) : null;
+                        })}
+                      </div>
+
+                      {/* Legend */}
+                      <div className="grid grid-cols-3 gap-4">
+                        {devices.map(({ key, label, icon }) => {
+                          const count = overview.deviceBreakdown[key] || 0;
+                          const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+                          return (
+                            <div key={key} className="text-center">
+                              <span className="text-2xl">{icon}</span>
+                              <p className="mt-1 text-lg font-bold text-white">{pct}%</p>
+                              <p className="text-xs text-slate-400">{label}</p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* Section 6 — Country Breakdown */}
+              <div className="rounded-xl border border-slate-700 bg-slate-800/60 p-6 backdrop-blur">
+                <h2 className="mb-4 text-lg font-bold text-white">🌍 Pays des visiteurs</h2>
+                {overview.countryBreakdown.length === 0 ? (
+                  <p className="text-sm text-slate-400">Aucune donnée de géolocalisation</p>
+                ) : (
+                  <div className="space-y-3">
+                    {overview.countryBreakdown.map((item, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center gap-3 rounded-lg border border-slate-700 bg-slate-900/40 px-4 py-3"
+                      >
+                        <span className="text-xl">
+                          {COUNTRY_FLAGS[item.country] || '🏳️'}
+                        </span>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-white">{item.country}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-bold text-white">{formatNumber(item.visitors)}</p>
+                          <p className="text-xs text-slate-400">{item.percentage}%</p>
+                        </div>
+                        {/* Mini bar */}
+                        <div className="h-2 w-20 overflow-hidden rounded-full bg-slate-700">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-400"
+                            style={{ width: `${item.percentage}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Section 7 — Top Searches */}
+              <div className="rounded-xl border border-slate-700 bg-slate-800/60 p-6 backdrop-blur">
+                <h2 className="mb-4 text-lg font-bold text-white">🔍 Recherches populaires</h2>
+                {overview.topSearches.length === 0 ? (
+                  <p className="text-sm text-slate-400">Aucune recherche enregistrée</p>
+                ) : (
+                  <div className="space-y-2">
+                    {overview.topSearches.map((search, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center gap-3 rounded-lg border border-slate-700 bg-slate-900/40 px-4 py-2"
+                      >
+                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-600 text-xs font-bold text-white">
+                          {i + 1}
+                        </span>
+                        <p className="flex-1 text-sm text-white">{search.query}</p>
+                        <p className="text-sm font-bold text-slate-200">{search.count}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Section 8 — Ad Performance */}
+              <div className="rounded-xl border border-slate-700 bg-slate-800/60 p-6 backdrop-blur">
+                <h2 className="mb-4 text-lg font-bold text-white">💰 Performance publicitaire</h2>
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <div className="rounded-lg border border-emerald-600/40 bg-emerald-500/5 p-4 text-center">
+                    <p className="text-3xl font-bold text-emerald-300">
+                      {formatNumber(overview.adPerformance.impressions)}
+                    </p>
+                    <p className="mt-1 text-sm text-slate-400">Impressions</p>
+                  </div>
+                  <div className="rounded-lg border border-blue-600/40 bg-blue-500/5 p-4 text-center">
+                    <p className="text-3xl font-bold text-blue-300">
+                      {formatNumber(overview.adPerformance.clicks)}
+                    </p>
+                    <p className="mt-1 text-sm text-slate-400">Clics pub</p>
+                  </div>
+                  <div className="rounded-lg border border-red-600/40 bg-red-500/5 p-4 text-center">
+                    <p className="text-3xl font-bold text-red-300">
+                      {overview.adPerformance.blockRate}%
+                    </p>
+                    <p className="mt-1 text-sm text-slate-400">Taux de blocage</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+
+        {!overview && !loading && (
+          <div className="rounded-xl border border-slate-700 bg-slate-800/60 p-12 text-center backdrop-blur">
+            <p className="text-5xl">📊</p>
+            <h2 className="mt-4 text-xl font-bold text-white">Aucune donnée disponible</h2>
+            <p className="mt-2 text-sm text-slate-400">
+              Les statistiques apparaîtront dès que des visiteurs navigueront sur le site.
+            </p>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}

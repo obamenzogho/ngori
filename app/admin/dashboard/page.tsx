@@ -679,12 +679,20 @@ export default function AdminDashboard() {
               Gerer, modifier et publier vos contenus depuis un seul ecran.
             </p>
           </div>
-          <button
-            onClick={handleLogout}
-            className="rounded-lg bg-red-600 px-4 py-2 text-white transition hover:bg-red-700"
-          >
-            Deconnexion
-          </button>
+          <div className="flex items-center gap-3">
+            <a
+              href="/admin/analytics"
+              className="rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700"
+            >
+              📊 Analytics
+            </a>
+            <button
+              onClick={handleLogout}
+              className="rounded-lg bg-red-600 px-4 py-2 text-white transition hover:bg-red-700"
+            >
+              Deconnexion
+            </button>
+          </div>
         </div>
       </header>
 
