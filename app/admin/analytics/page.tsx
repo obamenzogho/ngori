@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 type Period = 'today' | '7d' | '30d' | '12m' | 'year';
@@ -148,7 +147,7 @@ export default function AnalyticsDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+      <div className="flex items-center justify-center py-20">
         <div className="text-center">
           <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-white" />
           <p className="text-slate-400">Chargement des statistiques...</p>
@@ -158,36 +157,26 @@ export default function AnalyticsDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-slate-700 bg-slate-900/95 backdrop-blur">
-        <div className="container mx-auto flex items-center justify-between px-4 py-4">
-          <div>
-            <h1 className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-3xl font-bold text-transparent">
-              📊 Analytics
-            </h1>
-            <p className="mt-1 text-sm text-slate-400">
-              Suivi et analyse du trafic en temps réel
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleExportCsv}
-              className="rounded-lg border border-slate-600 px-4 py-2 text-sm text-slate-200 transition hover:border-slate-400"
-            >
-              📥 Exporter
-            </button>
-            <Link
-              href="/admin/dashboard"
-              className="rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700"
-            >
-              ← Dashboard
-            </Link>
-          </div>
+    <>
+      {/* Page title & Export */}
+      <div className="container mx-auto flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 pt-6 pb-2">
+        <div>
+          <h2 className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-2xl font-bold text-transparent">
+            📊 Analytics
+          </h2>
+          <p className="mt-1 text-sm text-slate-400">
+            Suivi et analyse du trafic en temps réel
+          </p>
         </div>
-      </header>
+        <button
+          onClick={handleExportCsv}
+          className="rounded-lg border border-slate-600 px-4 py-2 text-sm text-slate-200 transition hover:border-slate-400"
+        >
+          📥 Exporter
+        </button>
+      </div>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-4">
         {/* Period selector */}
         <div className="mb-8 flex flex-wrap gap-2">
           {(Object.keys(PERIOD_LABELS) as Period[]).map((p) => (
@@ -496,6 +485,6 @@ export default function AnalyticsDashboard() {
           </div>
         )}
       </main>
-    </div>
+    </>
   );
 }

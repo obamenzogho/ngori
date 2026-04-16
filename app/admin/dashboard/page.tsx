@@ -624,11 +624,6 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleLogout = async () => {
-    await fetch('/api/auth/logout');
-    router.push('/');
-  };
-
   const getItemTitle = (item: DashboardItem) => item.title || item.name || 'Sans titre';
 
   const getItemDetails = (item: DashboardItem) => {
@@ -668,34 +663,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <header className="sticky top-0 z-50 border-b border-slate-700 bg-slate-900/95 backdrop-blur">
-        <div className="container mx-auto flex items-center justify-between px-4 py-4">
-          <div>
-            <h1 className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-3xl font-bold text-transparent">
-              Ngori Admin
-            </h1>
-            <p className="mt-1 text-sm text-slate-400">
-              Gerer, modifier et publier vos contenus depuis un seul ecran.
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <a
-              href="/admin/analytics"
-              className="rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700"
-            >
-              📊 Analytics
-            </a>
-            <button
-              onClick={handleLogout}
-              className="rounded-lg bg-red-600 px-4 py-2 text-white transition hover:bg-red-700"
-            >
-              Deconnexion
-            </button>
-          </div>
-        </div>
-      </header>
-
+    <>
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8 flex flex-wrap gap-2">
           {TAB_ORDER.map((tab) => (
@@ -981,6 +949,6 @@ export default function AdminDashboard() {
           </section>
         </div>
       </main>
-    </div>
+    </>
   );
 }
