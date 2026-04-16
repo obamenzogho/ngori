@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import BulkImport from '@/app/components/BulkImport';
 
 type ContentType = 'playlists' | 'xtream' | 'mac-portal' | 'apps';
 
@@ -363,6 +364,7 @@ function getFilteredPayload(formData: FormDataState) {
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<ContentType>('playlists');
+  const [bulkMode, setBulkMode] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{ error: string; success: string }>({
     error: '',
@@ -380,6 +382,7 @@ export default function AdminDashboard() {
     setEditingId(null);
     setFormData(getInitialFormData(activeTab));
     setFeedback({ error: '', success: '' });
+    setBulkMode(false);
   }, [activeTab]);
 
   useEffect(() => {
@@ -809,111 +812,164 @@ export default function AdminDashboard() {
           </section>
 
           <section className="rounded-lg border border-slate-700 bg-slate-800/50 p-6 backdrop-blur">
-            <div className="mb-6 flex items-start justify-between gap-4">
-              <div>
-                <h2 className="mb-2 text-xl font-bold text-white">
-                  {editingId ? 'Modifier le contenu' : config.heading}
-                </h2>
-                <p className="text-sm text-slate-400">
-                  {editingId
-                    ? 'Appliquez vos changements puis enregistrez.'
-                    : 'Remplissez les champs ci-dessous pour publier un nouvel element.'}
-                </p>
-              </div>
-
-              {editingId && (
+            {/* Mode toggle — only for types that support bulk import */}
+            {activeTab !== 'apps' && !editingId && (
+              <div className="mb-6 flex items-center gap-3">
                 <button
-                  onClick={resetForm}
-                  className="rounded-lg border border-slate-600 px-4 py-2 text-sm text-slate-200 transition hover:border-slate-400"
+                  onClick={() => setBulkMode(false)}
+                  className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
+                    !bulkMode
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                  }`}
                 >
-                  Annuler
+                  ✏️ Ajout unitaire
                 </button>
-              )}
-            </div>
+                <button
+                  onClick={() => setBulkMode(true)}
+                  className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
+                    bulkMode
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                  }`}
+                >
+                  📦 Import en masse
+                </button>
+              </div>
+            )}
 
-            <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
-              {config.fields.map((field) => {
-                if (field.type === 'checkbox') {
-                  return (
-                    <label
-                      key={field.name}
-                      className="md:col-span-2 flex items-center gap-3 rounded-lg border border-slate-700 bg-slate-900/40 px-4 py-3 text-slate-200"
+            {bulkMode && activeTab !== 'apps' ? (
+              <BulkImport
+                activeTab={activeTab}
+                onImportComplete={() => {
+                  // Reload items after bulk import
+                  const controller = new AbortController();
+                  async function reload() {
+                    try {
+                      const response = await fetch(getEndpoint(activeTab), {
+                        signal: controller.signal,
+                      });
+                      if (response.ok) {
+                        const data = (await response.json()) as DashboardItem[];
+                        setItems(data);
+                      }
+                    } catch {
+                      // silently ignore
+                    }
+                  }
+                  void reload();
+                  return () => controller.abort();
+                }}
+              />
+            ) : (
+              <>
+                <div className="mb-6 flex items-start justify-between gap-4">
+                  <div>
+                    <h2 className="mb-2 text-xl font-bold text-white">
+                      {editingId ? 'Modifier le contenu' : config.heading}
+                    </h2>
+                    <p className="text-sm text-slate-400">
+                      {editingId
+                        ? 'Appliquez vos changements puis enregistrez.'
+                        : 'Remplissez les champs ci-dessous pour publier un nouvel element.'}
+                    </p>
+                  </div>
+
+                  {editingId && (
+                    <button
+                      onClick={resetForm}
+                      className="rounded-lg border border-slate-600 px-4 py-2 text-sm text-slate-200 transition hover:border-slate-400"
                     >
-                      <input
-                        type="checkbox"
-                        checked={Boolean(formData[field.name])}
-                        onChange={(event) =>
-                          handleFieldChange(field.name, event.target.checked)
-                        }
-                        className="h-4 w-4 rounded border-slate-500 bg-slate-800"
-                      />
-                      <span>{field.label}</span>
-                    </label>
-                  );
-                }
+                      Annuler
+                    </button>
+                  )}
+                </div>
 
-                const isTextarea = field.type === 'textarea';
+                <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
+                  {config.fields.map((field) => {
+                    if (field.type === 'checkbox') {
+                      return (
+                        <label
+                          key={field.name}
+                          className="md:col-span-2 flex items-center gap-3 rounded-lg border border-slate-700 bg-slate-900/40 px-4 py-3 text-slate-200"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={Boolean(formData[field.name])}
+                            onChange={(event) =>
+                              handleFieldChange(field.name, event.target.checked)
+                            }
+                            className="h-4 w-4 rounded border-slate-500 bg-slate-800"
+                          />
+                          <span>{field.label}</span>
+                        </label>
+                      );
+                    }
 
-                return (
-                  <label
-                    key={field.name}
-                    className={isTextarea ? 'md:col-span-2' : ''}
-                  >
-                    <span className="mb-2 block text-sm font-medium text-slate-200">
-                      {field.label}
-                    </span>
+                    const isTextarea = field.type === 'textarea';
 
-                    {isTextarea ? (
-                      <textarea
-                        value={String(formData[field.name] ?? '')}
-                        onChange={(event) =>
-                          handleFieldChange(field.name, event.target.value)
-                        }
-                        placeholder={field.placeholder}
-                        required={field.required}
-                        rows={field.name === 'content' ? 8 : 4}
-                        className="w-full rounded-lg border border-slate-600 bg-slate-900/60 px-4 py-3 text-white placeholder-slate-500 outline-none transition focus:border-blue-500"
-                      />
-                    ) : (
-                      <input
-                        type={field.type || 'text'}
-                        value={String(formData[field.name] ?? '')}
-                        onChange={(event) =>
-                          handleFieldChange(field.name, event.target.value)
-                        }
-                        placeholder={field.placeholder}
-                        required={field.required}
-                        className="w-full rounded-lg border border-slate-600 bg-slate-900/60 px-4 py-3 text-white placeholder-slate-500 outline-none transition focus:border-blue-500"
-                      />
+                    return (
+                      <label
+                        key={field.name}
+                        className={isTextarea ? 'md:col-span-2' : ''}
+                      >
+                        <span className="mb-2 block text-sm font-medium text-slate-200">
+                          {field.label}
+                        </span>
+
+                        {isTextarea ? (
+                          <textarea
+                            value={String(formData[field.name] ?? '')}
+                            onChange={(event) =>
+                              handleFieldChange(field.name, event.target.value)
+                            }
+                            placeholder={field.placeholder}
+                            required={field.required}
+                            rows={field.name === 'content' ? 8 : 4}
+                            className="w-full rounded-lg border border-slate-600 bg-slate-900/60 px-4 py-3 text-white placeholder-slate-500 outline-none transition focus:border-blue-500"
+                          />
+                        ) : (
+                          <input
+                            type={field.type || 'text'}
+                            value={String(formData[field.name] ?? '')}
+                            onChange={(event) =>
+                              handleFieldChange(field.name, event.target.value)
+                            }
+                            placeholder={field.placeholder}
+                            required={field.required}
+                            className="w-full rounded-lg border border-slate-600 bg-slate-900/60 px-4 py-3 text-white placeholder-slate-500 outline-none transition focus:border-blue-500"
+                          />
+                        )}
+                      </label>
+                    );
+                  })}
+
+                  <div className="md:col-span-2 flex flex-col gap-3 sm:flex-row">
+                    <button
+                      type="submit"
+                      disabled={submitting}
+                      className="flex-1 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-800"
+                    >
+                      {submitting
+                        ? 'Enregistrement...'
+                        : editingId
+                          ? config.updateLabel
+                          : config.submitLabel}
+                    </button>
+
+                    {editingId && (
+                      <button
+                        type="button"
+                        onClick={resetForm}
+                        className="rounded-lg border border-slate-600 px-6 py-3 font-semibold text-slate-200 transition hover:border-slate-400"
+                      >
+                        Reinitialiser
+                      </button>
                     )}
-                  </label>
-                );
-              })}
-
-              <div className="md:col-span-2 flex flex-col gap-3 sm:flex-row">
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="flex-1 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-800"
-                >
-                  {submitting
-                    ? 'Enregistrement...'
-                    : editingId
-                      ? config.updateLabel
-                      : config.submitLabel}
-                </button>
-
-                {editingId && (
-                  <button
-                    type="button"
-                    onClick={resetForm}
-                    className="rounded-lg border border-slate-600 px-6 py-3 font-semibold text-slate-200 transition hover:border-slate-400"
-                  >
-                    Reinitialiser
-                  </button>
-                )}
-              </div>
-            </form>
+                  </div>
+                </form>
+              </>
+            )}
           </section>
         </div>
       </main>
