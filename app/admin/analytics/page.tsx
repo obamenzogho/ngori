@@ -68,9 +68,9 @@ function formatTime(seconds: number): string {
 }
 
 function ChangeIndicator({ change }: { change: number }) {
-  if (change === 0) return <span className="text-slate-400">0%</span>;
+  if (change === 0) return <span className="text-[#5C5C72]">0%</span>;
   return (
-    <span className={`flex items-center gap-1 text-sm font-semibold ${change > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+    <span className={`flex items-center gap-1 text-sm font-semibold ${change > 0 ? 'text-[#4ADE80]' : 'text-red-400'}`}>
       {change > 0 ? '↑' : '↓'} {Math.abs(change)}%
     </span>
   );
@@ -150,7 +150,7 @@ export default function AnalyticsDashboard() {
       <div className="flex items-center justify-center py-20">
         <div className="text-center">
           <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-white" />
-          <p className="text-slate-400">Chargement des statistiques...</p>
+          <p className="text-[#5C5C72]">Chargement des statistiques...</p>
         </div>
       </div>
     );
@@ -161,16 +161,16 @@ export default function AnalyticsDashboard() {
       {/* Page title & Export */}
       <div className="container mx-auto flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 pt-6 pb-2">
         <div>
-          <h2 className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-2xl font-bold text-transparent">
+          <h2 className="text-2xl font-bold text-[#E8E8ED]">
             📊 Analytics
           </h2>
-          <p className="mt-1 text-sm text-slate-400">
+          <p className="mt-1 text-sm text-[#5C5C72]">
             Suivi et analyse du trafic en temps réel
           </p>
         </div>
         <button
           onClick={handleExportCsv}
-          className="rounded-lg border border-slate-600 px-4 py-2 text-sm text-slate-200 transition hover:border-slate-400"
+          className="linear-btn linear-btn-ghost text-sm"
         >
           📥 Exporter
         </button>
@@ -185,8 +185,8 @@ export default function AnalyticsDashboard() {
               onClick={() => setPeriod(p)}
               className={`rounded-lg px-5 py-2 text-sm font-semibold transition ${
                 period === p
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                  ? 'bg-[#5E6AD2] text-[#E8E8ED]'
+                  : 'bg-white/[0.04] text-[#8B8B9E] hover:bg-white/[0.08] hover:text-[#E8E8ED]'
               }`}
             >
               {PERIOD_LABELS[p]}
@@ -207,24 +207,24 @@ export default function AnalyticsDashboard() {
               ].map(({ label, key, icon }) => (
                 <div
                   key={key}
-                  className="rounded-xl border border-slate-700 bg-slate-800/60 p-5 backdrop-blur"
+                  className="rounded-xl border border-white/[0.06] bg-[#111118] p-5"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-2xl">{icon}</span>
                     <ChangeIndicator change={overview.kpis[key].change} />
                   </div>
-                  <p className="mt-3 text-3xl font-bold text-white">
+                  <p className="mt-3 text-3xl font-bold text-[#E8E8ED]">
                     {formatNumber(overview.kpis[key].value)}
                   </p>
-                  <p className="mt-1 text-sm text-slate-400">{label}</p>
+                  <p className="mt-1 text-sm text-[#5C5C72]">{label}</p>
                 </div>
               ))}
             </div>
 
             {/* Section 2 — Charts */}
-            <div className="mb-8 rounded-xl border border-slate-700 bg-slate-800/60 p-6 backdrop-blur">
+            <div className="mb-8 rounded-xl border border-white/[0.06] bg-[#111118] p-6">
               <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <h2 className="text-lg font-bold text-white">Évolution temporelle</h2>
+                <h2 className="text-lg font-bold text-[#E8E8ED]">Évolution temporelle</h2>
                 <div className="flex gap-2">
                   {[
                     { key: 'visitors' as const, label: 'Visiteurs' },
@@ -236,8 +236,8 @@ export default function AnalyticsDashboard() {
                       onClick={() => setActiveChart(key)}
                       className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
                         activeChart === key
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                          ? 'bg-[#5E6AD2] text-[#E8E8ED]'
+                          : 'bg-white/[0.04] text-[#8B8B9E] hover:bg-white/[0.08] hover:text-[#E8E8ED]'
                       }`}
                     >
                       {label}
@@ -258,20 +258,20 @@ export default function AnalyticsDashboard() {
                       key={i}
                       className="group relative flex min-w-[24px] flex-1 flex-col items-center"
                     >
-                      <div className="absolute -top-8 hidden rounded bg-slate-900 px-2 py-1 text-xs text-white group-hover:block">
+                      <div className="absolute -top-8 hidden rounded bg-[#0A0A0F] px-2 py-1 text-xs text-[#E8E8ED] group-hover:block">
                         {formatNumber(Number(value))}
                       </div>
                       <div
-                        className="w-full rounded-t bg-gradient-to-t from-blue-600 to-cyan-400 transition-all duration-200 hover:from-blue-500 hover:to-cyan-300"
+                        className="w-full rounded-t bg-gradient-to-t from-[#5E6AD2] to-[#7C6BF7] transition-all duration-200 hover:from-blue-500 hover:to-cyan-300"
                         style={{ height: `${Math.max(height, 2)}%` }}
                       />
-                      <span className="mt-2 text-[10px] text-slate-500">{dateLabel}</span>
+                      <span className="mt-2 text-[10px] text-[#5C5C72]">{dateLabel}</span>
                     </div>
                   );
                 })}
               </div>
               {chartData.length === 0 && (
-                <div className="flex h-64 items-center justify-center text-slate-400">
+                <div className="flex h-64 items-center justify-center text-[#5C5C72]">
                   Aucune donnée pour cette période
                 </div>
               )}
@@ -279,29 +279,29 @@ export default function AnalyticsDashboard() {
 
             <div className="grid gap-8 lg:grid-cols-2">
               {/* Section 3 — Top Clicks */}
-              <div className="rounded-xl border border-slate-700 bg-slate-800/60 p-6 backdrop-blur">
-                <h2 className="mb-4 text-lg font-bold text-white">👆 Clics les plus fréquents</h2>
+              <div className="rounded-xl border border-white/[0.06] bg-[#111118] p-6">
+                <h2 className="mb-4 text-lg font-bold text-[#E8E8ED]">👆 Clics les plus fréquents</h2>
                 {overview.topClicks.length === 0 ? (
-                  <p className="text-sm text-slate-400">Aucun clic enregistré</p>
+                  <p className="text-sm text-[#5C5C72]">Aucun clic enregistré</p>
                 ) : (
                   <div className="space-y-3">
                     {overview.topClicks.map((click, i) => (
                       <div
                         key={i}
-                        className="flex items-center gap-3 rounded-lg border border-slate-700 bg-slate-900/40 px-4 py-3"
+                        className="flex items-center gap-3 rounded-lg border border-white/[0.06] bg-[#0A0A0F] px-4 py-3"
                       >
-                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
+                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#5E6AD2] text-xs font-bold text-[#E8E8ED]">
                           {i + 1}
                         </span>
                         <div className="flex-1 min-w-0">
-                          <p className="truncate text-sm font-medium text-white">
+                          <p className="truncate text-sm font-medium text-[#E8E8ED]">
                             {click.label || click.element}
                           </p>
-                          <p className="text-xs text-slate-400">{click.element}</p>
+                          <p className="text-xs text-[#5C5C72]">{click.element}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm font-bold text-white">{formatNumber(click.clicks)}</p>
-                          <p className="text-xs text-slate-400">{click.percentage}%</p>
+                          <p className="text-sm font-bold text-[#E8E8ED]">{formatNumber(click.clicks)}</p>
+                          <p className="text-xs text-[#5C5C72]">{click.percentage}%</p>
                         </div>
                       </div>
                     ))}
@@ -310,15 +310,15 @@ export default function AnalyticsDashboard() {
               </div>
 
               {/* Section 4 — Top Pages */}
-              <div className="rounded-xl border border-slate-700 bg-slate-800/60 p-6 backdrop-blur">
-                <h2 className="mb-4 text-lg font-bold text-white">📄 Pages les plus visitées</h2>
+              <div className="rounded-xl border border-white/[0.06] bg-[#111118] p-6">
+                <h2 className="mb-4 text-lg font-bold text-[#E8E8ED]">📄 Pages les plus visitées</h2>
                 {overview.topPages.length === 0 ? (
-                  <p className="text-sm text-slate-400">Aucune page visitée</p>
+                  <p className="text-sm text-[#5C5C72]">Aucune page visitée</p>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="border-b border-slate-700 text-xs text-slate-400">
+                        <tr className="border-b border-white/[0.06] text-xs text-[#5C5C72]">
                           <th className="pb-2 text-left">Page</th>
                           <th className="pb-2 text-right">Vues</th>
                           <th className="pb-2 text-right">Temps moyen</th>
@@ -326,10 +326,10 @@ export default function AnalyticsDashboard() {
                       </thead>
                       <tbody>
                         {overview.topPages.map((page, i) => (
-                          <tr key={i} className="border-b border-slate-700/50">
-                            <td className="py-2 text-white">{page.page}</td>
-                            <td className="py-2 text-right text-slate-200">{formatNumber(page.views)}</td>
-                            <td className="py-2 text-right text-slate-300">{formatTime(page.avgTimeOnPage)}</td>
+                          <tr key={i} className="border-b border-white/[0.04]">
+                            <td className="py-2 text-[#E8E8ED]">{page.page}</td>
+                            <td className="py-2 text-right text-[#8B8B9E]">{formatNumber(page.views)}</td>
+                            <td className="py-2 text-right text-[#8B8B9E]">{formatTime(page.avgTimeOnPage)}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -339,16 +339,16 @@ export default function AnalyticsDashboard() {
               </div>
 
               {/* Section 5 — Device Breakdown */}
-              <div className="rounded-xl border border-slate-700 bg-slate-800/60 p-6 backdrop-blur">
-                <h2 className="mb-4 text-lg font-bold text-white">📱 Répartition des appareils</h2>
+              <div className="rounded-xl border border-white/[0.06] bg-[#111118] p-6">
+                <h2 className="mb-4 text-lg font-bold text-[#E8E8ED]">📱 Répartition des appareils</h2>
                 {(() => {
                   const total = Object.values(overview.deviceBreakdown).reduce((a, b) => a + b, 0);
-                  if (total === 0) return <p className="text-sm text-slate-400">Aucune donnée</p>;
+                  if (total === 0) return <p className="text-sm text-[#5C5C72]">Aucune donnée</p>;
 
                   const devices = [
-                    { key: 'desktop', label: 'Desktop', icon: '🖥️', color: 'bg-blue-500' },
-                    { key: 'mobile', label: 'Mobile', icon: '📱', color: 'bg-emerald-500' },
-                    { key: 'tablet', label: 'Tablette', icon: '📟', color: 'bg-amber-500' },
+                    { key: 'desktop', label: 'Desktop', icon: '🖥️', color: 'bg-[#5E6AD2]' },
+                    { key: 'mobile', label: 'Mobile', icon: '📱', color: 'bg-[#4ADE80]' },
+                    { key: 'tablet', label: 'Tablette', icon: '📟', color: 'bg-[#D4A843]' },
                   ];
 
                   return (
@@ -361,7 +361,7 @@ export default function AnalyticsDashboard() {
                           return pct > 0 ? (
                             <div
                               key={key}
-                              className={`${color} flex items-center justify-center text-xs font-bold text-white transition-all`}
+                              className={`${color} flex items-center justify-center text-xs font-bold text-[#E8E8ED] transition-all`}
                               style={{ width: `${pct}%` }}
                             >
                               {pct >= 10 ? `${Math.round(pct)}%` : ''}
@@ -378,8 +378,8 @@ export default function AnalyticsDashboard() {
                           return (
                             <div key={key} className="text-center">
                               <span className="text-2xl">{icon}</span>
-                              <p className="mt-1 text-lg font-bold text-white">{pct}%</p>
-                              <p className="text-xs text-slate-400">{label}</p>
+                              <p className="mt-1 text-lg font-bold text-[#E8E8ED]">{pct}%</p>
+                              <p className="text-xs text-[#5C5C72]">{label}</p>
                             </div>
                           );
                         })}
@@ -390,31 +390,31 @@ export default function AnalyticsDashboard() {
               </div>
 
               {/* Section 6 — Country Breakdown */}
-              <div className="rounded-xl border border-slate-700 bg-slate-800/60 p-6 backdrop-blur">
-                <h2 className="mb-4 text-lg font-bold text-white">🌍 Pays des visiteurs</h2>
+              <div className="rounded-xl border border-white/[0.06] bg-[#111118] p-6">
+                <h2 className="mb-4 text-lg font-bold text-[#E8E8ED]">🌍 Pays des visiteurs</h2>
                 {overview.countryBreakdown.length === 0 ? (
-                  <p className="text-sm text-slate-400">Aucune donnée de géolocalisation</p>
+                  <p className="text-sm text-[#5C5C72]">Aucune donnée de géolocalisation</p>
                 ) : (
                   <div className="space-y-3">
                     {overview.countryBreakdown.map((item, i) => (
                       <div
                         key={i}
-                        className="flex items-center gap-3 rounded-lg border border-slate-700 bg-slate-900/40 px-4 py-3"
+                        className="flex items-center gap-3 rounded-lg border border-white/[0.06] bg-[#0A0A0F] px-4 py-3"
                       >
                         <span className="text-xl">
                           {COUNTRY_FLAGS[item.country] || '🏳️'}
                         </span>
                         <div className="flex-1">
-                          <p className="text-sm font-medium text-white">{item.country}</p>
+                          <p className="text-sm font-medium text-[#E8E8ED]">{item.country}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm font-bold text-white">{formatNumber(item.visitors)}</p>
-                          <p className="text-xs text-slate-400">{item.percentage}%</p>
+                          <p className="text-sm font-bold text-[#E8E8ED]">{formatNumber(item.visitors)}</p>
+                          <p className="text-xs text-[#5C5C72]">{item.percentage}%</p>
                         </div>
                         {/* Mini bar */}
-                        <div className="h-2 w-20 overflow-hidden rounded-full bg-slate-700">
+                        <div className="h-2 w-20 overflow-hidden rounded-full bg-white/[0.06]">
                           <div
-                            className="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-400"
+                            className="h-full rounded-full bg-gradient-to-r from-[#5E6AD2] to-[#7C6BF7]"
                             style={{ width: `${item.percentage}%` }}
                           />
                         </div>
@@ -425,22 +425,22 @@ export default function AnalyticsDashboard() {
               </div>
 
               {/* Section 7 — Top Searches */}
-              <div className="rounded-xl border border-slate-700 bg-slate-800/60 p-6 backdrop-blur">
-                <h2 className="mb-4 text-lg font-bold text-white">🔍 Recherches populaires</h2>
+              <div className="rounded-xl border border-white/[0.06] bg-[#111118] p-6">
+                <h2 className="mb-4 text-lg font-bold text-[#E8E8ED]">🔍 Recherches populaires</h2>
                 {overview.topSearches.length === 0 ? (
-                  <p className="text-sm text-slate-400">Aucune recherche enregistrée</p>
+                  <p className="text-sm text-[#5C5C72]">Aucune recherche enregistrée</p>
                 ) : (
                   <div className="space-y-2">
                     {overview.topSearches.map((search, i) => (
                       <div
                         key={i}
-                        className="flex items-center gap-3 rounded-lg border border-slate-700 bg-slate-900/40 px-4 py-2"
+                        className="flex items-center gap-3 rounded-lg border border-white/[0.06] bg-[#0A0A0F] px-4 py-2"
                       >
-                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-600 text-xs font-bold text-white">
+                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#7C6BF7] text-xs font-bold text-[#E8E8ED]">
                           {i + 1}
                         </span>
-                        <p className="flex-1 text-sm text-white">{search.query}</p>
-                        <p className="text-sm font-bold text-slate-200">{search.count}</p>
+                        <p className="flex-1 text-sm text-[#E8E8ED]">{search.query}</p>
+                        <p className="text-sm font-bold text-[#8B8B9E]">{search.count}</p>
                       </div>
                     ))}
                   </div>
@@ -448,26 +448,26 @@ export default function AnalyticsDashboard() {
               </div>
 
               {/* Section 8 — Ad Performance */}
-              <div className="rounded-xl border border-slate-700 bg-slate-800/60 p-6 backdrop-blur">
-                <h2 className="mb-4 text-lg font-bold text-white">💰 Performance publicitaire</h2>
+              <div className="rounded-xl border border-white/[0.06] bg-[#111118] p-6">
+                <h2 className="mb-4 text-lg font-bold text-[#E8E8ED]">💰 Performance publicitaire</h2>
                 <div className="grid gap-4 sm:grid-cols-3">
-                  <div className="rounded-lg border border-emerald-600/40 bg-emerald-500/5 p-4 text-center">
-                    <p className="text-3xl font-bold text-emerald-300">
+                  <div className="rounded-lg border border-[#4ADE80]/20 bg-[#4ADE80]/5 p-4 text-center">
+                    <p className="text-3xl font-bold text-[#4ADE80]">
                       {formatNumber(overview.adPerformance.impressions)}
                     </p>
-                    <p className="mt-1 text-sm text-slate-400">Impressions</p>
+                    <p className="mt-1 text-sm text-[#5C5C72]">Impressions</p>
                   </div>
-                  <div className="rounded-lg border border-blue-600/40 bg-blue-500/5 p-4 text-center">
-                    <p className="text-3xl font-bold text-blue-300">
+                  <div className="rounded-lg border border-[#5E6AD2]/20 bg-[#5E6AD2]/5 p-4 text-center">
+                    <p className="text-3xl font-bold text-[#8B93E6]">
                       {formatNumber(overview.adPerformance.clicks)}
                     </p>
-                    <p className="mt-1 text-sm text-slate-400">Clics pub</p>
+                    <p className="mt-1 text-sm text-[#5C5C72]">Clics pub</p>
                   </div>
-                  <div className="rounded-lg border border-red-600/40 bg-red-500/5 p-4 text-center">
-                    <p className="text-3xl font-bold text-red-300">
+                  <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-4 text-center">
+                    <p className="text-3xl font-bold text-red-400">
                       {overview.adPerformance.blockRate}%
                     </p>
-                    <p className="mt-1 text-sm text-slate-400">Taux de blocage</p>
+                    <p className="mt-1 text-sm text-[#5C5C72]">Taux de blocage</p>
                   </div>
                 </div>
               </div>
@@ -476,10 +476,10 @@ export default function AnalyticsDashboard() {
         )}
 
         {!overview && !loading && (
-          <div className="rounded-xl border border-slate-700 bg-slate-800/60 p-12 text-center backdrop-blur">
+          <div className="rounded-xl border border-white/[0.06] bg-[#111118] p-12 text-center">
             <p className="text-5xl">📊</p>
-            <h2 className="mt-4 text-xl font-bold text-white">Aucune donnée disponible</h2>
-            <p className="mt-2 text-sm text-slate-400">
+            <h2 className="mt-4 text-xl font-bold text-[#E8E8ED]">Aucune donnée disponible</h2>
+            <p className="mt-2 text-sm text-[#5C5C72]">
               Les statistiques apparaîtront dès que des visiteurs navigueront sur le site.
             </p>
           </div>

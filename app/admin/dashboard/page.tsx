@@ -672,8 +672,8 @@ export default function AdminDashboard() {
               onClick={() => setActiveTab(tab)}
               className={`rounded-lg px-6 py-2 font-semibold transition ${
                 activeTab === tab
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                  ? 'bg-[#5E6AD2] text-[#E8E8ED]'
+                  : 'bg-white/[0.04] text-[#8B8B9E] hover:bg-white/[0.08] hover:text-[#E8E8ED]'
               }`}
             >
               {TAB_CONFIG[tab].tabLabel}
@@ -682,23 +682,23 @@ export default function AdminDashboard() {
         </div>
 
         {feedback.error && (
-          <div className="mb-6 rounded-lg border border-red-500/60 bg-red-500/10 px-4 py-3 text-red-100">
+          <div className="mb-6 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-red-400">
             {feedback.error}
           </div>
         )}
 
         {feedback.success && (
-          <div className="mb-6 rounded-lg border border-emerald-500/60 bg-emerald-500/10 px-4 py-3 text-emerald-100">
+          <div className="mb-6 rounded-lg border border-[#4ADE80]/20 bg-[#4ADE80]/10 px-4 py-3 text-[#4ADE80]">
             {feedback.success}
           </div>
         )}
 
         <div className="grid gap-8 xl:grid-cols-[1.25fr_0.95fr]">
-          <section className="rounded-lg border border-slate-700 bg-slate-800/50 p-6 backdrop-blur">
+          <section className="rounded-xl border border-white/[0.06] bg-[#111118] p-6">
             <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <h2 className="text-xl font-bold text-white">{config.heading}</h2>
-                <p className="mt-1 text-sm text-slate-400">
+                <h2 className="text-xl font-bold text-[#E8E8ED]">{config.heading}</h2>
+                <p className="mt-1 text-sm text-[#5C5C72]">
                   {filteredItems.length} element(s) sur {items.length}
                 </p>
               </div>
@@ -708,17 +708,17 @@ export default function AdminDashboard() {
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder="Rechercher dans cet onglet"
-                className="w-full rounded-lg border border-slate-600 bg-slate-900/60 px-4 py-3 text-white placeholder-slate-500 outline-none transition focus:border-blue-500 lg:max-w-xs"
+                className="w-full rounded-lg border border-white/[0.06] bg-[#0A0A0F] px-4 py-3 text-[#E8E8ED] placeholder-[#5C5C72] outline-none transition focus:border-[#5E6AD2] lg:max-w-xs"
               />
             </div>
 
             {loading ? (
               <div className="py-8 text-center">
-                <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-white"></div>
+                <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-[#5E6AD2]"></div>
                 <p>Chargement...</p>
               </div>
             ) : filteredItems.length === 0 ? (
-              <p className="py-8 text-center text-slate-400">
+              <p className="py-8 text-center text-[#5C5C72]">
                 {searchTerm ? 'Aucun resultat pour cette recherche.' : config.emptyLabel}
               </p>
             ) : (
@@ -730,41 +730,41 @@ export default function AdminDashboard() {
                   return (
                     <article
                       key={item._id}
-                      className="rounded-lg border border-slate-600 bg-slate-700/40 p-4"
+                      className="rounded-lg border border-white/[0.06] bg-[#0A0A0F] p-4"
                     >
                       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                         <div>
                           <div className="flex flex-wrap items-center gap-2">
-                            <h3 className="text-lg font-semibold text-white">
+                            <h3 className="text-lg font-semibold text-[#E8E8ED]">
                               {getItemTitle(item)}
                             </h3>
                             <span
                               className={`rounded-full px-3 py-1 text-xs font-semibold ${
                                 item.isActive
-                                  ? 'bg-emerald-500/15 text-emerald-200'
-                                  : 'bg-amber-500/15 text-amber-200'
+                                  ? 'bg-[#4ADE80]/15 text-[#4ADE80]'
+                                  : 'bg-[#D4A843]/15 text-[#D4A843]'
                               }`}
                             >
                               {item.isActive ? 'Visible' : 'Masque'}
                             </span>
                           </div>
-                          <p className="mt-2 text-sm text-slate-300">{getItemDetails(item)}</p>
+                          <p className="mt-2 text-sm text-[#8B8B9E]">{getItemDetails(item)}</p>
                           {secondaryLine && (
-                            <p className="mt-1 text-xs text-slate-400">{secondaryLine}</p>
+                            <p className="mt-1 text-xs text-[#5C5C72]">{secondaryLine}</p>
                           )}
                         </div>
 
                         <div className="flex flex-wrap gap-2">
                           <button
                             onClick={() => handleEdit(item)}
-                            className="rounded-lg bg-slate-900 px-3 py-2 text-sm text-white transition hover:bg-slate-950"
+                            className="rounded-lg bg-white/[0.06] px-3 py-2 text-sm text-[#E8E8ED] transition hover:bg-white/[0.1]"
                           >
                             Modifier
                           </button>
                           <button
                             onClick={() => void handleVisibilityToggle(item)}
                             disabled={isVisibilityLoading}
-                            className="rounded-lg bg-amber-600 px-3 py-2 text-sm text-white transition hover:bg-amber-700 disabled:cursor-not-allowed disabled:bg-amber-800"
+                            className="rounded-lg bg-[#D4A843]/80 px-3 py-2 text-sm text-[#E8E8ED] transition hover:bg-[#D4A843] disabled:cursor-not-allowed disabled:bg-[#D4A843]/50"
                           >
                             {isVisibilityLoading
                               ? 'Patientez...'
@@ -774,7 +774,7 @@ export default function AdminDashboard() {
                           </button>
                           <button
                             onClick={() => handleDelete(item._id)}
-                            className="rounded-lg bg-red-600 px-3 py-2 text-sm text-white transition hover:bg-red-700"
+                            className="rounded-lg bg-red-500/80 px-3 py-2 text-sm text-[#E8E8ED] transition hover:bg-red-500"
                           >
                             Supprimer
                           </button>
@@ -787,7 +787,7 @@ export default function AdminDashboard() {
             )}
           </section>
 
-          <section className="rounded-lg border border-slate-700 bg-slate-800/50 p-6 backdrop-blur">
+          <section className="rounded-xl border border-white/[0.06] bg-[#111118] p-6">
             {/* Mode toggle — only for types that support bulk import */}
             {activeTab !== 'apps' && !editingId && (
               <div className="mb-6 flex items-center gap-3">
@@ -795,8 +795,8 @@ export default function AdminDashboard() {
                   onClick={() => setBulkMode(false)}
                   className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
                     !bulkMode
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                      ? 'bg-[#5E6AD2] text-[#E8E8ED]'
+                      : 'bg-white/[0.04] text-[#8B8B9E] hover:bg-white/[0.08] hover:text-[#E8E8ED]'
                   }`}
                 >
                   ✏️ Ajout unitaire
@@ -805,8 +805,8 @@ export default function AdminDashboard() {
                   onClick={() => setBulkMode(true)}
                   className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
                     bulkMode
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                      ? 'bg-[#5E6AD2] text-[#E8E8ED]'
+                      : 'bg-white/[0.04] text-[#8B8B9E] hover:bg-white/[0.08] hover:text-[#E8E8ED]'
                   }`}
                 >
                   📦 Import en masse
@@ -841,10 +841,10 @@ export default function AdminDashboard() {
               <>
                 <div className="mb-6 flex items-start justify-between gap-4">
                   <div>
-                    <h2 className="mb-2 text-xl font-bold text-white">
+                    <h2 className="mb-2 text-xl font-bold text-[#E8E8ED]">
                       {editingId ? 'Modifier le contenu' : config.heading}
                     </h2>
-                    <p className="text-sm text-slate-400">
+                    <p className="text-sm text-[#5C5C72]">
                       {editingId
                         ? 'Appliquez vos changements puis enregistrez.'
                         : 'Remplissez les champs ci-dessous pour publier un nouvel element.'}
@@ -854,7 +854,7 @@ export default function AdminDashboard() {
                   {editingId && (
                     <button
                       onClick={resetForm}
-                      className="rounded-lg border border-slate-600 px-4 py-2 text-sm text-slate-200 transition hover:border-slate-400"
+                      className="linear-btn linear-btn-ghost text-sm"
                     >
                       Annuler
                     </button>
@@ -867,7 +867,7 @@ export default function AdminDashboard() {
                       return (
                         <label
                           key={field.name}
-                          className="md:col-span-2 flex items-center gap-3 rounded-lg border border-slate-700 bg-slate-900/40 px-4 py-3 text-slate-200"
+                          className="md:col-span-2 flex items-center gap-3 rounded-lg border border-white/[0.06] bg-[#0A0A0F] px-4 py-3 text-[#8B8B9E]"
                         >
                           <input
                             type="checkbox"
@@ -875,7 +875,7 @@ export default function AdminDashboard() {
                             onChange={(event) =>
                               handleFieldChange(field.name, event.target.checked)
                             }
-                            className="h-4 w-4 rounded border-slate-500 bg-slate-800"
+                            className="h-4 w-4 rounded border-white/[0.12] bg-[#0A0A0F]"
                           />
                           <span>{field.label}</span>
                         </label>
@@ -889,7 +889,7 @@ export default function AdminDashboard() {
                         key={field.name}
                         className={isTextarea ? 'md:col-span-2' : ''}
                       >
-                        <span className="mb-2 block text-sm font-medium text-slate-200">
+                        <span className="mb-2 block text-sm font-medium text-[#8B8B9E]">
                           {field.label}
                         </span>
 
@@ -902,7 +902,7 @@ export default function AdminDashboard() {
                             placeholder={field.placeholder}
                             required={field.required}
                             rows={field.name === 'content' ? 8 : 4}
-                            className="w-full rounded-lg border border-slate-600 bg-slate-900/60 px-4 py-3 text-white placeholder-slate-500 outline-none transition focus:border-blue-500"
+                            className="w-full rounded-lg border border-white/[0.06] bg-[#0A0A0F] px-4 py-3 text-[#E8E8ED] placeholder-[#5C5C72] outline-none transition focus:border-[#5E6AD2]"
                           />
                         ) : (
                           <input
@@ -913,7 +913,7 @@ export default function AdminDashboard() {
                             }
                             placeholder={field.placeholder}
                             required={field.required}
-                            className="w-full rounded-lg border border-slate-600 bg-slate-900/60 px-4 py-3 text-white placeholder-slate-500 outline-none transition focus:border-blue-500"
+                            className="w-full rounded-lg border border-white/[0.06] bg-[#0A0A0F] px-4 py-3 text-[#E8E8ED] placeholder-[#5C5C72] outline-none transition focus:border-[#5E6AD2]"
                           />
                         )}
                       </label>
@@ -924,7 +924,7 @@ export default function AdminDashboard() {
                     <button
                       type="submit"
                       disabled={submitting}
-                      className="flex-1 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-800"
+                      className="flex-1 linear-btn linear-btn-primary"
                     >
                       {submitting
                         ? 'Enregistrement...'
@@ -937,7 +937,7 @@ export default function AdminDashboard() {
                       <button
                         type="button"
                         onClick={resetForm}
-                        className="rounded-lg border border-slate-600 px-6 py-3 font-semibold text-slate-200 transition hover:border-slate-400"
+                        className="linear-btn linear-btn-ghost"
                       >
                         Reinitialiser
                       </button>

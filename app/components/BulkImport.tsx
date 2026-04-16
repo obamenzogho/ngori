@@ -340,18 +340,18 @@ export default function BulkImport({ activeTab, onImportComplete }: BulkImportPr
   // ─── Step: Input ───
   if (step === 'input') {
     return (
-      <div className="rounded-lg border border-slate-700 bg-slate-800/50 p-6 backdrop-blur">
+      <div className="rounded-xl border border-white/[0.06] bg-[#111118] p-6">
         <div className="mb-4">
-          <h2 className="text-xl font-bold text-white">📦 Import en masse automatisé</h2>
-          <p className="mt-1 text-sm text-slate-400">
+          <h2 className="text-xl font-bold text-[#E8E8ED]">📦 Import en masse automatisé</h2>
+          <p className="mt-1 text-sm text-[#5C5C72]">
             Collez vos URLs brutes ci-dessous, une par ligne. Le système détecte automatiquement le type
             (M3U, Xtream, Mac Portal) et analyse chaque URL.
           </p>
         </div>
 
-        <div className="mb-4 rounded-lg border border-slate-600 bg-slate-900/60 p-3">
-          <p className="mb-2 text-xs font-semibold text-slate-300">Formats supportés :</p>
-          <div className="space-y-1 text-xs text-cyan-300 font-mono">
+        <div className="mb-4 rounded-lg border border-white/[0.06] bg-[#0A0A0F] p-3">
+          <p className="mb-2 text-xs font-semibold text-[#8B8B9E]">Formats supportés :</p>
+          <div className="space-y-1 text-xs text-[#8B93E6] font-mono">
             <p>M3U : http://serveur.com/get.php?username=user&password=pass&type=m3u</p>
             <p>Xtream : http://serveur.com:8080/get.php?username=user&password=pass</p>
             <p>Mac Portal : http://portail.com/c/00:1A:79:XX:XX:XX</p>
@@ -363,19 +363,19 @@ export default function BulkImport({ activeTab, onImportComplete }: BulkImportPr
           onChange={(e) => setRawUrls(e.target.value)}
           placeholder="http://serveur1.com/get.php?username=user1&password=pass1&type=m3u&#10;http://serveur2.com:8080/get.php?username=user2&password=pass2&#10;http://portail3.com/c/00:1A:79:XX:XX:XX"
           rows={10}
-          className="mb-4 w-full rounded-lg border border-slate-600 bg-slate-900/60 px-4 py-3 font-mono text-sm text-white placeholder-slate-500 outline-none transition focus:border-blue-500"
+          className="mb-4 w-full rounded-lg border border-white/[0.06] bg-[#0A0A0F] px-4 py-3 font-mono text-sm text-[#E8E8ED] placeholder-[#5C5C72] outline-none transition focus:border-[#5E6AD2]"
         />
 
         <div className="flex items-center gap-4">
           <button
             onClick={handleAnalyze}
             disabled={!rawUrls.trim()}
-            className="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-800/50"
+            className="linear-btn linear-btn-primary"
           >
             🔍 Analyser les URLs
           </button>
           {rawUrls.trim() && (
-            <span className="text-sm text-slate-400">
+            <span className="text-sm text-[#5C5C72]">
               {rawUrls.split('\n').filter((l) => l.trim()).length} URL(s) détectée(s)
             </span>
           )}
@@ -389,22 +389,22 @@ export default function BulkImport({ activeTab, onImportComplete }: BulkImportPr
     const percent = progress.total > 0 ? Math.round((progress.current / progress.total) * 100) : 0;
 
     return (
-      <div className="rounded-lg border border-slate-700 bg-slate-800/50 p-6 backdrop-blur">
+      <div className="rounded-xl border border-white/[0.06] bg-[#111118] p-6">
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-white" />
-          <h2 className="text-xl font-bold text-white">Analyse en cours...</h2>
-          <p className="mt-1 text-sm text-slate-400">
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-[#5E6AD2]" />
+          <h2 className="text-xl font-bold text-[#E8E8ED]">Analyse en cours...</h2>
+          <p className="mt-1 text-sm text-[#5C5C72]">
             {progress.current} / {progress.total} URLs analysées
           </p>
         </div>
 
-        <div className="mb-4 overflow-hidden rounded-full bg-slate-700">
+        <div className="mb-4 overflow-hidden rounded-full bg-white/[0.06]">
           <div
-            className="h-3 rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-all duration-300"
+            className="h-3 rounded-full bg-gradient-to-r from-[#5E6AD2] to-[#7C6BF7] transition-all duration-300"
             style={{ width: `${percent}%` }}
           />
         </div>
-        <p className="text-center text-sm text-slate-400">{percent}%</p>
+        <p className="text-center text-sm text-[#5C5C72]">{percent}%</p>
 
         {/* Show entries as they are analyzed */}
         <div className="mt-6 max-h-60 space-y-2 overflow-y-auto">
@@ -413,16 +413,16 @@ export default function BulkImport({ activeTab, onImportComplete }: BulkImportPr
               key={i}
               className={`flex items-center gap-3 rounded-lg border px-3 py-2 text-sm ${
                 entry.analyzing
-                  ? 'border-slate-600 bg-slate-900/40'
+                  ? 'border-white/[0.06] bg-[#0A0A0F]'
                   : entry.error || entry.type === 'UNKNOWN'
-                    ? 'border-red-600/40 bg-red-500/5'
-                    : 'border-emerald-600/40 bg-emerald-500/5'
+                    ? 'border-red-500/20 bg-red-500/5'
+                    : 'border-[#4ADE80]/20 bg-[#4ADE80]/5'
               }`}
             >
               <span>{entry.analyzing ? '⏳' : getStatusEmoji(entry)}</span>
-              <span className="flex-1 truncate text-slate-200">{entry.url}</span>
+              <span className="flex-1 truncate text-[#8B8B9E]">{entry.url}</span>
               {!entry.analyzing && (
-                <span className="text-xs text-slate-400">{getTypeLabel(entry.type)}</span>
+                <span className="text-xs text-[#5C5C72]">{getTypeLabel(entry.type)}</span>
               )}
             </div>
           ))}
@@ -437,17 +437,17 @@ export default function BulkImport({ activeTab, onImportComplete }: BulkImportPr
     const errorCount = entries.filter((e) => e.type === 'UNKNOWN' || e.error).length;
 
     return (
-      <div className="rounded-lg border border-slate-700 bg-slate-800/50 p-6 backdrop-blur">
+      <div className="rounded-xl border border-white/[0.06] bg-[#111118] p-6">
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-xl font-bold text-white">📋 Résultats de l'analyse</h2>
-            <p className="mt-1 text-sm text-slate-400">
+            <h2 className="text-xl font-bold text-[#E8E8ED]">📋 Résultats de l'analyse</h2>
+            <p className="mt-1 text-sm text-[#5C5C72]">
               Vérifiez les entrées ci-dessous. Modifiez les titres/descriptions si besoin, puis publiez.
             </p>
           </div>
           <button
             onClick={handleReset}
-            className="rounded-lg border border-slate-600 px-4 py-2 text-sm text-slate-200 transition hover:border-slate-400"
+            className="linear-btn linear-btn-ghost text-sm"
           >
             Retour
           </button>
@@ -455,46 +455,46 @@ export default function BulkImport({ activeTab, onImportComplete }: BulkImportPr
 
         {/* Stats */}
         <div className="mb-4 flex flex-wrap gap-3">
-          <div className="rounded-lg border border-emerald-600/40 bg-emerald-500/10 px-4 py-2">
-            <span className="text-sm text-emerald-300">🟢 {validCount} valide(s)</span>
+          <div className="rounded-lg border border-[#4ADE80]/20 bg-[#4ADE80]/10 px-4 py-2">
+            <span className="text-sm text-[#4ADE80]">🟢 {validCount} valide(s)</span>
           </div>
           {errorCount > 0 && (
-            <div className="rounded-lg border border-red-600/40 bg-red-500/10 px-4 py-2">
-              <span className="text-sm text-red-300">🔴 {errorCount} erreur(s)</span>
+            <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-2">
+              <span className="text-sm text-red-400">🔴 {errorCount} erreur(s)</span>
             </div>
           )}
-          <div className="rounded-lg border border-blue-600/40 bg-blue-500/10 px-4 py-2">
-            <span className="text-sm text-blue-300">☑️ {selectedEntries.length} sélectionnée(s)</span>
+          <div className="rounded-lg border border-[#5E6AD2]/20 bg-[#5E6AD2]/10 px-4 py-2">
+            <span className="text-sm text-[#8B93E6]">☑️ {selectedEntries.length} sélectionnée(s)</span>
           </div>
         </div>
 
         {/* Table */}
-        <div className="mb-4 overflow-x-auto rounded-lg border border-slate-600">
+        <div className="mb-4 overflow-x-auto rounded-lg border border-white/[0.06]">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-600 bg-slate-900/60">
+            <thead className="border-b border-white/[0.06] bg-[#0A0A0F]">
               <tr>
                 <th className="px-3 py-3">
                   <input
                     type="checkbox"
                     checked={entries.length > 0 && entries.filter((e) => !e.analyzing).every((e) => e.selected)}
                     onChange={toggleAll}
-                    className="h-4 w-4 rounded border-slate-500 bg-slate-800"
+                    className="h-4 w-4 rounded border-white/[0.12] bg-[#0A0A0F]"
                   />
                 </th>
-                <th className="px-3 py-3 text-xs font-semibold text-slate-300">Statut</th>
-                <th className="px-3 py-3 text-xs font-semibold text-slate-300">Type</th>
-                <th className="px-3 py-3 text-xs font-semibold text-slate-300">Titre</th>
-                <th className="px-3 py-3 text-xs font-semibold text-slate-300">Description</th>
-                <th className="px-3 py-3 text-xs font-semibold text-slate-300">Expiration</th>
-                <th className="px-3 py-3 text-xs font-semibold text-slate-300">Contenu</th>
+                <th className="px-3 py-3 text-xs font-semibold text-[#8B8B9E]">Statut</th>
+                <th className="px-3 py-3 text-xs font-semibold text-[#8B8B9E]">Type</th>
+                <th className="px-3 py-3 text-xs font-semibold text-[#8B8B9E]">Titre</th>
+                <th className="px-3 py-3 text-xs font-semibold text-[#8B8B9E]">Description</th>
+                <th className="px-3 py-3 text-xs font-semibold text-[#8B8B9E]">Expiration</th>
+                <th className="px-3 py-3 text-xs font-semibold text-[#8B8B9E]">Contenu</th>
               </tr>
             </thead>
             <tbody>
               {entries.map((entry, index) => (
                 <tr
                   key={index}
-                  className={`border-b border-slate-700/50 ${
-                    entry.selected ? 'bg-slate-800/30' : 'bg-slate-900/40 opacity-60'
+                  className={`border-b border-white/[0.04] ${
+                    entry.selected ? 'bg-white/[0.02]' : 'bg-[#0A0A0F] opacity-60'
                   }`}
                 >
                   <td className="px-3 py-2">
@@ -502,7 +502,7 @@ export default function BulkImport({ activeTab, onImportComplete }: BulkImportPr
                       type="checkbox"
                       checked={entry.selected}
                       onChange={() => toggleEntry(index)}
-                      className="h-4 w-4 rounded border-slate-500 bg-slate-800"
+                      className="h-4 w-4 rounded border-white/[0.12] bg-[#0A0A0F]"
                     />
                   </td>
                   <td className="px-3 py-2">
@@ -512,10 +512,10 @@ export default function BulkImport({ activeTab, onImportComplete }: BulkImportPr
                   </td>
                   <td className="px-3 py-2">
                     <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                      entry.type === 'M3U' ? 'bg-blue-500/15 text-blue-300' :
-                      entry.type === 'XTREAM' ? 'bg-purple-500/15 text-purple-300' :
-                      entry.type === 'MAC_PORTAL' ? 'bg-amber-500/15 text-amber-300' :
-                      'bg-red-500/15 text-red-300'
+                      entry.type === 'M3U' ? 'bg-blue-500/15 text-[#8B93E6]' :
+                      entry.type === 'XTREAM' ? 'bg-[#7C6BF7]/15 text-[#A5A0F5]' :
+                      entry.type === 'MAC_PORTAL' ? 'bg-[#D4A843]/15 text-[#D4A843]' :
+                      'bg-red-500/15 text-red-400'
                     }`}>
                       {getTypeLabel(entry.type)}
                     </span>
@@ -525,7 +525,7 @@ export default function BulkImport({ activeTab, onImportComplete }: BulkImportPr
                       type="text"
                       value={entry.title}
                       onChange={(e) => updateEntryTitle(index, e.target.value)}
-                      className="w-full min-w-[120px] rounded border border-slate-600 bg-slate-900/60 px-2 py-1 text-sm text-white outline-none focus:border-blue-500"
+                      className="w-full min-w-[120px] rounded border border-white/[0.06] bg-[#0A0A0F] px-2 py-1 text-sm text-[#E8E8ED] outline-none focus:border-[#5E6AD2]"
                     />
                   </td>
                   <td className="max-w-[250px] px-3 py-2">
@@ -533,15 +533,15 @@ export default function BulkImport({ activeTab, onImportComplete }: BulkImportPr
                       value={entry.description}
                       onChange={(e) => updateEntryDescription(index, e.target.value)}
                       rows={2}
-                      className="w-full rounded border border-slate-600 bg-slate-900/60 px-2 py-1 text-xs text-slate-200 outline-none focus:border-blue-500"
+                      className="w-full rounded border border-white/[0.06] bg-[#0A0A0F] px-2 py-1 text-xs text-[#8B8B9E] outline-none focus:border-[#5E6AD2]"
                     />
                   </td>
-                  <td className="px-3 py-2 text-xs text-slate-300">
+                  <td className="px-3 py-2 text-xs text-[#8B8B9E]">
                     {entry.expiration.expirationDate
                       ? new Date(entry.expiration.expirationDate).toLocaleDateString('fr-FR')
                       : '—'}
                   </td>
-                  <td className="px-3 py-2 text-xs text-slate-300">
+                  <td className="px-3 py-2 text-xs text-[#8B8B9E]">
                     {entry.categories.totalLive > 0 && <span className="mr-1">📺 {entry.categories.totalLive}</span>}
                     {entry.categories.totalVod > 0 && <span className="mr-1">🎬 {entry.categories.totalVod}</span>}
                     {entry.categories.totalSeries > 0 && <span className="mr-1">📺 {entry.categories.totalSeries}</span>}
@@ -558,13 +558,13 @@ export default function BulkImport({ activeTab, onImportComplete }: BulkImportPr
           <button
             onClick={handleImport}
             disabled={selectedEntries.length === 0}
-            className="rounded-lg bg-emerald-600 px-6 py-3 font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-800/50"
+            className="linear-btn linear-btn-primary"
           >
             🚀 Publier {selectedEntries.length} entrée(s)
           </button>
           <button
             onClick={handleReset}
-            className="rounded-lg border border-slate-600 px-6 py-3 font-semibold text-slate-200 transition hover:border-slate-400"
+            className="linear-btn linear-btn-ghost"
           >
             Annuler
           </button>
@@ -578,22 +578,22 @@ export default function BulkImport({ activeTab, onImportComplete }: BulkImportPr
     const percent = progress.total > 0 ? Math.round((progress.current / progress.total) * 100) : 0;
 
     return (
-      <div className="rounded-lg border border-slate-700 bg-slate-800/50 p-6 backdrop-blur">
+      <div className="rounded-xl border border-white/[0.06] bg-[#111118] p-6">
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-white" />
-          <h2 className="text-xl font-bold text-white">Import en cours...</h2>
-          <p className="mt-1 text-sm text-slate-400">
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-[#5E6AD2]" />
+          <h2 className="text-xl font-bold text-[#E8E8ED]">Import en cours...</h2>
+          <p className="mt-1 text-sm text-[#5C5C72]">
             {progress.current} / {progress.total} entrées traitées
           </p>
         </div>
 
-        <div className="mb-4 overflow-hidden rounded-full bg-slate-700">
+        <div className="mb-4 overflow-hidden rounded-full bg-white/[0.06]">
           <div
-            className="h-3 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-400 transition-all duration-300"
+            className="h-3 rounded-full bg-gradient-to-r from-[#4ADE80] to-[#7C6BF7] transition-all duration-300"
             style={{ width: `${percent}%` }}
           />
         </div>
-        <p className="text-center text-sm text-slate-400">{percent}%</p>
+        <p className="text-center text-sm text-[#5C5C72]">{percent}%</p>
       </div>
     );
   }
@@ -601,31 +601,31 @@ export default function BulkImport({ activeTab, onImportComplete }: BulkImportPr
   // ─── Step: Done ───
   if (step === 'done' && importResult) {
     return (
-      <div className="rounded-lg border border-slate-700 bg-slate-800/50 p-6 backdrop-blur">
+      <div className="rounded-xl border border-white/[0.06] bg-[#111118] p-6">
         <div className="mb-6 text-center">
           <div className="mx-auto mb-4 text-5xl">
             {importResult.errorCount === 0 ? '✅' : '⚠️'}
           </div>
-          <h2 className="text-xl font-bold text-white">Import terminé</h2>
+          <h2 className="text-xl font-bold text-[#E8E8ED]">Import terminé</h2>
         </div>
 
         <div className="mb-6 flex justify-center gap-6">
-          <div className="rounded-lg border border-emerald-600/40 bg-emerald-500/10 px-6 py-4 text-center">
-            <p className="text-3xl font-bold text-emerald-300">{importResult.successCount}</p>
-            <p className="mt-1 text-sm text-emerald-200">Réussite(s)</p>
+          <div className="rounded-lg border border-[#4ADE80]/20 bg-[#4ADE80]/10 px-6 py-4 text-center">
+            <p className="text-3xl font-bold text-[#4ADE80]">{importResult.successCount}</p>
+            <p className="mt-1 text-sm text-[#4ADE80]">Réussite(s)</p>
           </div>
-          <div className="rounded-lg border border-red-600/40 bg-red-500/10 px-6 py-4 text-center">
-            <p className="text-3xl font-bold text-red-300">{importResult.errorCount}</p>
-            <p className="mt-1 text-sm text-red-200">Erreur(s)</p>
+          <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-6 py-4 text-center">
+            <p className="text-3xl font-bold text-red-400">{importResult.errorCount}</p>
+            <p className="mt-1 text-sm text-red-400">Erreur(s)</p>
           </div>
         </div>
 
         {importResult.errors.length > 0 && (
-          <div className="mb-6 max-h-40 overflow-y-auto rounded-lg border border-red-600/40 bg-red-500/5 p-3">
-            <p className="mb-2 text-xs font-semibold text-red-300">Détails des erreurs :</p>
+          <div className="mb-6 max-h-40 overflow-y-auto rounded-lg border border-red-500/20 bg-red-500/5 p-3">
+            <p className="mb-2 text-xs font-semibold text-red-400">Détails des erreurs :</p>
             <ul className="space-y-1">
               {importResult.errors.map((err, i) => (
-                <li key={i} className="text-xs text-red-200">• {err}</li>
+                <li key={i} className="text-xs text-red-400">• {err}</li>
               ))}
             </ul>
           </div>
@@ -634,7 +634,7 @@ export default function BulkImport({ activeTab, onImportComplete }: BulkImportPr
         <div className="flex justify-center gap-3">
           <button
             onClick={handleReset}
-            className="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700"
+            className="rounded-lg bg-[#5E6AD2] px-6 py-3 font-semibold text-[#E8E8ED] transition hover:bg-blue-700"
           >
             Nouvel import
           </button>

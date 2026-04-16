@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Ngori - Plateforme de contenus IPTV',
-  description: 'Partagez playlists M3U, acces Xtream, portails Mac et applications',
+  title: 'Ngori — Plateforme IPTV',
+  description: 'Partagez playlists M3U, accès Xtream, portails Mac et applications',
 };
 
 export default function RootLayout({
@@ -30,7 +30,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head />
-      <body className="min-h-full flex flex-col bg-[#F5F7FF] text-[#1a1a2e]">
+      <body className="min-h-full flex flex-col bg-[#0A0A0F] text-[#E8E8ED]">
         <AnalyticsTracker />
         <AdBlockDetector disabled={process.env.NODE_ENV === 'development'}>
           {children}

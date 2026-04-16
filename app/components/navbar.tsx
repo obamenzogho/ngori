@@ -14,11 +14,11 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { id: 'all', label: 'Actualités', icon: <IconNewspaper size={16} /> },
-  { id: 'playlists', label: 'M3U', icon: <IconMusic size={16} /> },
-  { id: 'xtreamCodes', label: 'Xtream', icon: <IconRadio size={16} /> },
-  { id: 'macPortals', label: 'Mac Portal', icon: <IconMonitor size={16} /> },
-  { id: 'appItems', label: 'Applications', icon: <IconSmartphone size={16} /> },
+  { id: 'all', label: 'Actualités', icon: <IconNewspaper size={15} /> },
+  { id: 'playlists', label: 'M3U', icon: <IconMusic size={15} /> },
+  { id: 'xtreamCodes', label: 'Xtream', icon: <IconRadio size={15} /> },
+  { id: 'macPortals', label: 'Mac Portal', icon: <IconMonitor size={15} /> },
+  { id: 'appItems', label: 'Apps', icon: <IconSmartphone size={15} /> },
 ];
 
 interface NavbarProps {
@@ -38,7 +38,6 @@ export default function Navbar({ activeView, onViewChange }: NavbarProps) {
     }, 50);
   }, [onViewChange]);
 
-  // Close mobile menu on outside click
   useEffect(() => {
     if (!mobileMenuOpen) return;
 
@@ -52,7 +51,6 @@ export default function Navbar({ activeView, onViewChange }: NavbarProps) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [mobileMenuOpen]);
 
-  // Close mobile menu on resize to desktop
   useEffect(() => {
     function handleResize() {
       if (window.innerWidth >= 768) {
@@ -65,27 +63,27 @@ export default function Navbar({ activeView, onViewChange }: NavbarProps) {
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/60">
+    <header className="sticky top-0 z-50 bg-[#0A0A0F]/80 backdrop-blur-xl border-b border-white/[0.06]">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex h-14 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="h-8 w-8 rounded-lg bg-[#4169E1] flex items-center justify-center shadow-md shadow-[#4169E1]/20 group-hover:shadow-lg group-hover:shadow-[#4169E1]/30 transition-shadow">
-              <span className="text-white font-bold text-sm">N</span>
+            <div className="h-7 w-7 rounded-md bg-[#5E6AD2] flex items-center justify-center ngori-glow transition-shadow group-hover:shadow-[0_0_24px_rgba(94,106,210,0.4)]">
+              <span className="text-white font-bold text-xs">N</span>
             </div>
-            <span className="text-xl font-bold text-[#1a1a2e] tracking-tight">Ngori</span>
+            <span className="text-base font-semibold text-[#E8E8ED] tracking-tight">Ngori</span>
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden md:flex items-center gap-0.5">
             {NAV_ITEMS.map((item) => (
               <button
                 key={item.id}
                 onClick={() => goToView(item.id)}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[13px] font-medium transition-all duration-150 ${
                   activeView === item.id
-                    ? 'bg-[#4169E1] text-white shadow-md shadow-[#4169E1]/25'
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-[#1a1a2e]'
+                    ? 'bg-white/[0.08] text-white'
+                    : 'text-[#8B8B9E] hover:text-[#E8E8ED] hover:bg-white/[0.04]'
                 }`}
               >
                 {item.icon}
@@ -97,10 +95,10 @@ export default function Navbar({ activeView, onViewChange }: NavbarProps) {
           {/* Mobile hamburger */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 -mr-2 rounded-lg hover:bg-slate-100 transition-colors text-slate-600"
+            className="md:hidden p-2 -mr-2 rounded-md hover:bg-white/[0.04] transition-colors text-[#8B8B9E]"
             aria-label={mobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
           >
-            {mobileMenuOpen ? <IconX size={24} /> : <IconMenu size={24} />}
+            {mobileMenuOpen ? <IconX size={20} /> : <IconMenu size={20} />}
           </button>
         </div>
       </div>
@@ -108,19 +106,19 @@ export default function Navbar({ activeView, onViewChange }: NavbarProps) {
       {/* Mobile dropdown menu */}
       <div
         ref={menuRef}
-        className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+        className={`md:hidden overflow-hidden transition-all duration-200 ease-in-out ${
           mobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        <nav className="px-4 pb-4 pt-2 space-y-1 border-t border-slate-200/60 bg-white/95 backdrop-blur-xl">
+        <nav className="px-4 pb-4 pt-2 space-y-0.5 border-t border-white/[0.06] bg-[#0A0A0F]/95 backdrop-blur-xl">
           {NAV_ITEMS.map((item) => (
             <button
               key={item.id}
               onClick={() => goToView(item.id)}
-              className={`w-full flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 ${
+              className={`w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-all duration-150 ${
                 activeView === item.id
-                  ? 'bg-[#4169E1] text-white shadow-md shadow-[#4169E1]/25'
-                  : 'text-slate-600 hover:bg-slate-100 hover:text-[#1a1a2e]'
+                  ? 'bg-white/[0.08] text-white'
+                  : 'text-[#8B8B9E] hover:text-[#E8E8ED] hover:bg-white/[0.04]'
               }`}
             >
               {item.icon}

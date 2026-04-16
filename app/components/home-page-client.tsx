@@ -93,13 +93,13 @@ type Notice = {
   tone: 'error' | 'success';
 };
 
-// ─── Badge color map ───
+// ─── Badge color map (dark mode) ───
 
 const TYPE_BADGE: Record<string, { bg: string; text: string; label: string }> = {
-  playlists: { bg: 'bg-blue-50', text: 'text-blue-700', label: 'M3U' },
-  xtreamCodes: { bg: 'bg-emerald-50', text: 'text-emerald-700', label: 'Xtream' },
-  macPortals: { bg: 'bg-orange-50', text: 'text-orange-700', label: 'Mac Portal' },
-  appItems: { bg: 'bg-purple-50', text: 'text-purple-700', label: 'Application' },
+  playlists: { bg: 'bg-[#5E6AD2]/15', text: 'text-[#8B93E6]', label: 'M3U' },
+  xtreamCodes: { bg: 'bg-emerald-500/15', text: 'text-emerald-400', label: 'Xtream' },
+  macPortals: { bg: 'bg-amber-500/15', text: 'text-amber-400', label: 'Mac Portal' },
+  appItems: { bg: 'bg-purple-500/15', text: 'text-purple-400', label: 'Application' },
 };
 
 // ─── Main Component ───
@@ -236,7 +236,7 @@ export default function HomePageClient({
   const showApps = activeView === 'all' || activeView === 'appItems';
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F5F7FF]">
+    <div className="min-h-screen flex flex-col bg-[#0A0A0F] dot-grid">
       <Navbar activeView={activeView} onViewChange={setActiveView} />
 
       {/* Main Content */}
@@ -245,10 +245,10 @@ export default function HomePageClient({
         {!hasVisitedBefore && (
           <section className="mb-8 sm:mb-12 animate-fade-in">
             <div className="max-w-2xl">
-              <h2 className="mb-3 text-2xl sm:text-3xl md:text-4xl font-bold text-[#1a1a2e]">
+              <h2 className="mb-3 text-2xl sm:text-3xl md:text-4xl font-bold text-[#E8E8ED]">
                 Bienvenue sur Ngori
               </h2>
-              <p className="text-sm sm:text-base md:text-lg text-slate-600 leading-relaxed">
+              <p className="text-sm sm:text-base md:text-lg text-[#8B8B9E] leading-relaxed">
                 Découvrez les derniers contenus IPTV ajoutés : playlists M3U, accès Xtream,
                 portails Mac et applications. Filtrez par catégorie en un clic.
               </p>
@@ -259,10 +259,10 @@ export default function HomePageClient({
         {/* Notice */}
         {notice && (
           <div
-            className={`mb-6 rounded-xl px-4 py-3 text-sm font-medium animate-fade-in ${
+            className={`mb-6 rounded-lg px-4 py-3 text-sm font-medium animate-fade-in ${
               notice.tone === 'success'
-                ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                : 'bg-red-50 text-red-800 border border-red-200'
+                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                : 'bg-red-500/10 text-red-400 border border-red-500/20'
             }`}
           >
             {notice.message}
@@ -271,7 +271,7 @@ export default function HomePageClient({
 
         {/* Load error */}
         {loadError && (
-          <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800 animate-fade-in">
+          <div className="mb-6 rounded-lg border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm font-medium text-amber-400 animate-fade-in">
             {loadError}
           </div>
         )}
@@ -282,16 +282,16 @@ export default function HomePageClient({
             <section className="animate-fade-in">
               <div className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
                 <div>
-                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#1a1a2e]">
+                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#E8E8ED]">
                     Récemment ajouté
                   </h3>
                 </div>
-                <span className="inline-flex self-start sm:self-auto rounded-full bg-[#4169E1]/10 px-3 py-1 text-xs font-semibold text-[#4169E1]">
+                <span className="inline-flex self-start sm:self-auto rounded-md bg-[#5E6AD2]/10 px-2.5 py-1 text-[11px] font-medium text-[#8B93E6]">
                   {recentFeed.length} publication(s)
                 </span>
               </div>
 
-              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+              <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
                 {recentFeed.slice(0, 8).map((item) => {
                   const badge = TYPE_BADGE[item.type];
                   const detailHref =
@@ -307,43 +307,43 @@ export default function HomePageClient({
                     <Link
                       key={`${item.type}-${item.id}`}
                       href={detailHref || '/'}
-                      className="group block rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-sm transition-all duration-200 hover:shadow-md hover:border-[#4169E1]/30 hover:-translate-y-0.5"
+                      className="group block rounded-xl border border-white/[0.06] bg-[#111118] p-5 transition-all duration-200 hover:border-white/[0.12] hover:bg-[#1A1A24]"
                     >
                       <div className="mb-3 flex items-center justify-between gap-2">
                         {badge && (
-                          <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wider ${badge.bg} ${badge.text}`}>
+                          <span className={`inline-flex rounded-md px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider ${badge.bg} ${badge.text}`}>
                             {badge.label}
                           </span>
                         )}
-                        <span className="text-[10px] sm:text-xs text-slate-400 flex-shrink-0">
+                        <span className="text-[10px] sm:text-xs text-[#5C5C72] flex-shrink-0">
                           {formatDate(item.createdAt)}
                         </span>
                       </div>
-                      <h4 className="text-base sm:text-lg font-semibold text-[#1a1a2e] leading-snug group-hover:text-[#4169E1] transition-colors">
+                      <h4 className="text-sm sm:text-base font-medium text-[#E8E8ED] leading-snug group-hover:text-white transition-colors">
                         {item.title}
                       </h4>
-                      <p className="mt-1.5 text-xs sm:text-sm text-slate-500 line-clamp-2">
+                      <p className="mt-1.5 text-xs sm:text-sm text-[#5C5C72] line-clamp-2">
                         {item.description}
                       </p>
                       {item.type === 'xtreamCodes' && item.rawData && (
-                        <div className="mt-2 text-[10px] sm:text-xs text-slate-400 font-mono space-y-0.5">
+                        <div className="mt-2 text-[10px] sm:text-xs text-[#5C5C72] font-mono space-y-0.5">
                           <p className="truncate">{(item.rawData as XtreamItem).serverUrl}</p>
                           <p>{(item.rawData as XtreamItem).username}</p>
                         </div>
                       )}
                       {item.type === 'macPortals' && item.rawData && (item.rawData as MacPortalItem).macAddress && (
-                        <p className="mt-2 text-[10px] sm:text-xs font-mono text-[#4169E1]">
+                        <p className="mt-2 text-[10px] sm:text-xs font-mono text-[#5E6AD2]">
                           MAC: {(item.rawData as MacPortalItem).macAddress}
                         </p>
                       )}
                       {item.type === 'appItems' && item.rawData && (
-                        <p className="mt-2 text-xs text-slate-400">
+                        <p className="mt-2 text-xs text-[#5C5C72]">
                           {(item.rawData as PublicAppItem).version || 'v1.0.0'} — {(item.rawData as PublicAppItem).fileSize || 'Taille N/A'}
                         </p>
                       )}
-                      <span className="mt-4 inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[#4169E1] group-hover:gap-2.5 transition-all">
+                      <span className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-[#5E6AD2] group-hover:gap-1.5 transition-all">
                         Voir les détails
-                        <IconChevronRight size={14} />
+                        <IconChevronRight size={12} />
                       </span>
                     </Link>
                   );
@@ -357,40 +357,40 @@ export default function HomePageClient({
             <section className="animate-fade-in">
               <div className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
                 <div>
-                  <span className="text-xs sm:text-sm uppercase tracking-[0.2em] text-blue-600 font-semibold">M3U</span>
-                  <h3 className="mt-1 text-xl sm:text-2xl md:text-3xl font-bold text-[#1a1a2e]">Playlists M3U</h3>
+                  <span className="text-[11px] sm:text-xs uppercase tracking-[0.15em] text-[#5E6AD2] font-medium">M3U</span>
+                  <h3 className="mt-1 text-xl sm:text-2xl md:text-3xl font-bold text-[#E8E8ED]">Playlists M3U</h3>
                 </div>
-                <span className="text-xs sm:text-sm text-slate-500">{playlists.length} playlist(s)</span>
+                <span className="text-xs sm:text-sm text-[#5C5C72]">{playlists.length} playlist(s)</span>
               </div>
 
-              <div className="grid grid-cols-1 gap-4 sm:gap-5 md:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {playlists.map((playlist) => (
                   <Link
                     key={playlist._id}
                     href={`/playlist/${playlist._id}`}
-                    className="group block rounded-2xl border border-slate-200/80 bg-white shadow-sm transition-all duration-200 hover:shadow-md hover:border-blue-300/50 hover:-translate-y-0.5"
+                    className="group block rounded-xl border border-white/[0.06] bg-[#111118] transition-all duration-200 hover:border-white/[0.12] hover:bg-[#1A1A24] overflow-hidden"
                   >
                     {playlist.logo && (
-                      <div className="h-40 sm:h-48 rounded-t-2xl overflow-hidden bg-slate-100">
+                      <div className="h-36 sm:h-44 overflow-hidden bg-[#1A1A24]">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={playlist.logo} alt={playlist.title} className="w-full h-full object-cover" />
+                        <img src={playlist.logo} alt={playlist.title} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
                       </div>
                     )}
-                    <div className="p-5">
+                    <div className="p-4 sm:p-5">
                       {playlist.category && (
-                        <span className="inline-flex rounded-full bg-blue-50 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-blue-700 mb-2">
+                        <span className="inline-flex rounded-md bg-[#5E6AD2]/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[#8B93E6] mb-2">
                           {playlist.category}
                         </span>
                       )}
-                      <h4 className="text-base sm:text-lg font-semibold text-[#1a1a2e] leading-snug group-hover:text-[#4169E1] transition-colors">
+                      <h4 className="text-sm sm:text-base font-medium text-[#E8E8ED] leading-snug group-hover:text-white transition-colors">
                         {playlist.title}
                       </h4>
-                      <p className="mt-1.5 text-xs sm:text-sm text-slate-500 line-clamp-2">
+                      <p className="mt-1.5 text-xs sm:text-sm text-[#5C5C72] line-clamp-2">
                         {playlist.description || 'Playlist disponible au téléchargement'}
                       </p>
-                      <div className="mt-4 flex items-center justify-between">
-                        <span className="text-[10px] sm:text-xs text-slate-400">{formatDate(playlist.createdAt)}</span>
-                        <span className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-[#4169E1] group-hover:gap-1.5 transition-all">
+                      <div className="mt-3 flex items-center justify-between">
+                        <span className="text-[10px] sm:text-xs text-[#5C5C72]">{formatDate(playlist.createdAt)}</span>
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-[#5E6AD2] group-hover:gap-1.5 transition-all">
                           Voir
                           <IconChevronRight size={12} />
                         </span>
@@ -407,54 +407,54 @@ export default function HomePageClient({
             <section className="animate-fade-in">
               <div className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
                 <div>
-                  <span className="text-xs sm:text-sm uppercase tracking-[0.2em] text-emerald-600 font-semibold">Xtream</span>
-                  <h3 className="mt-1 text-xl sm:text-2xl md:text-3xl font-bold text-[#1a1a2e]">Accès Xtream</h3>
+                  <span className="text-[11px] sm:text-xs uppercase tracking-[0.15em] text-emerald-400 font-medium">Xtream</span>
+                  <h3 className="mt-1 text-xl sm:text-2xl md:text-3xl font-bold text-[#E8E8ED]">Accès Xtream</h3>
                 </div>
-                <span className="text-xs sm:text-sm text-slate-500">{xtreamCodes.length} accès</span>
+                <span className="text-xs sm:text-sm text-[#5C5C72]">{xtreamCodes.length} accès</span>
               </div>
 
-              <div className="grid grid-cols-1 gap-4 sm:gap-5 md:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {xtreamCodes.map((code) => (
                   <Link
                     key={code._id}
                     href={`/xtream/${code._id}`}
-                    className="group block rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-sm transition-all duration-200 hover:shadow-md hover:border-emerald-300/50 hover:-translate-y-0.5"
+                    className="group block rounded-xl border border-white/[0.06] bg-[#111118] p-4 sm:p-5 transition-all duration-200 hover:border-white/[0.12] hover:bg-[#1A1A24]"
                   >
                     {(code.category || code.expirationDate) && (
                       <div className="mb-3 flex flex-wrap items-center gap-2">
                         {code.category && (
-                          <span className="inline-flex rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700">
+                          <span className="inline-flex rounded-md bg-emerald-500/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-emerald-400">
                             {code.category}
                           </span>
                         )}
                         {code.expirationDate && (
-                          <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
+                          <span className={`inline-flex rounded-md px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider ${
                             new Date(code.expirationDate) < new Date()
-                              ? 'bg-red-50 text-red-700'
-                              : 'bg-emerald-50 text-emerald-700'
+                              ? 'bg-red-500/15 text-red-400'
+                              : 'bg-emerald-500/15 text-emerald-400'
                           }`}>
                             {new Date(code.expirationDate) < new Date() ? 'Expiré' : 'Actif'}
                           </span>
                         )}
                       </div>
                     )}
-                    <h4 className="text-base sm:text-lg font-semibold text-[#1a1a2e] leading-snug group-hover:text-[#4169E1] transition-colors">
+                    <h4 className="text-sm sm:text-base font-medium text-[#E8E8ED] leading-snug group-hover:text-white transition-colors">
                       {code.title}
                     </h4>
-                    <p className="mt-1.5 text-xs sm:text-sm text-slate-500 line-clamp-2">
+                    <p className="mt-1.5 text-xs sm:text-sm text-[#5C5C72] line-clamp-2">
                       {code.description || 'Connexion Xtream disponible'}
                     </p>
                     <div className="mt-3 space-y-1 text-xs sm:text-sm">
                       <p className="truncate">
-                        <span className="font-medium text-slate-700">Serveur:</span> <span className="text-slate-400 break-all">{code.serverUrl}</span>
+                        <span className="font-medium text-[#8B8B9E]">Serveur:</span> <span className="text-[#5C5C72] break-all">{code.serverUrl}</span>
                       </p>
                       <p>
-                        <span className="font-medium text-slate-700">Utilisateur:</span> <span className="text-slate-500">{code.username}</span>
+                        <span className="font-medium text-[#8B8B9E]">Utilisateur:</span> <span className="text-[#5C5C72]">{code.username}</span>
                       </p>
                     </div>
-                    <div className="mt-4 flex items-center justify-between">
-                      <span className="text-[10px] sm:text-xs text-slate-400">{formatDate(code.createdAt)}</span>
-                      <span className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-[#4169E1] group-hover:gap-1.5 transition-all">
+                    <div className="mt-3 flex items-center justify-between">
+                      <span className="text-[10px] sm:text-xs text-[#5C5C72]">{formatDate(code.createdAt)}</span>
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-[#5E6AD2] group-hover:gap-1.5 transition-all">
                         Voir
                         <IconChevronRight size={12} />
                       </span>
@@ -470,45 +470,45 @@ export default function HomePageClient({
             <section className="animate-fade-in">
               <div className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
                 <div>
-                  <span className="text-xs sm:text-sm uppercase tracking-[0.2em] text-orange-600 font-semibold">Mac Portal</span>
-                  <h3 className="mt-1 text-xl sm:text-2xl md:text-3xl font-bold text-[#1a1a2e]">Portails Mac</h3>
+                  <span className="text-[11px] sm:text-xs uppercase tracking-[0.15em] text-amber-400 font-medium">Mac Portal</span>
+                  <h3 className="mt-1 text-xl sm:text-2xl md:text-3xl font-bold text-[#E8E8ED]">Portails Mac</h3>
                 </div>
-                <span className="text-xs sm:text-sm text-slate-500">{macPortals.length} portail(x)</span>
+                <span className="text-xs sm:text-sm text-[#5C5C72]">{macPortals.length} portail(x)</span>
               </div>
 
-              <div className="grid grid-cols-1 gap-4 sm:gap-5 md:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {macPortals.map((portal) => (
                   <Link
                     key={portal._id}
                     href={`/mac-portal/${portal._id}`}
-                    className="group block rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-sm transition-all duration-200 hover:shadow-md hover:border-orange-300/50 hover:-translate-y-0.5"
+                    className="group block rounded-xl border border-white/[0.06] bg-[#111118] p-4 sm:p-5 transition-all duration-200 hover:border-white/[0.12] hover:bg-[#1A1A24]"
                   >
                     {portal.category && (
-                      <span className="inline-flex rounded-full bg-orange-50 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-orange-700 mb-2">
+                      <span className="inline-flex rounded-md bg-amber-500/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-amber-400 mb-2">
                         {portal.category}
                       </span>
                     )}
-                    <h4 className="text-base sm:text-lg font-semibold text-[#1a1a2e] leading-snug group-hover:text-[#4169E1] transition-colors">
+                    <h4 className="text-sm sm:text-base font-medium text-[#E8E8ED] leading-snug group-hover:text-white transition-colors">
                       {portal.title}
                     </h4>
-                    <p className="mt-1.5 text-xs sm:text-sm text-slate-500 line-clamp-2">
+                    <p className="mt-1.5 text-xs sm:text-sm text-[#5C5C72] line-clamp-2">
                       {portal.description || 'Portail disponible'}
                     </p>
                     {portal.macAddress && (
                       <p className="mt-2 text-xs sm:text-sm">
-                        <span className="text-slate-400">MAC: </span>
-                        <span className="font-mono text-[#4169E1] text-[10px] sm:text-xs">{portal.macAddress}</span>
+                        <span className="text-[#5C5C72]">MAC: </span>
+                        <span className="font-mono text-[#5E6AD2] text-[10px] sm:text-xs">{portal.macAddress}</span>
                       </p>
                     )}
                     {portal.macIdentifier && (
                       <p className="mt-1 text-xs sm:text-sm">
-                        <span className="text-slate-400">ID: </span>
-                        <span className="font-mono text-[#4169E1] text-[10px] sm:text-xs">{portal.macIdentifier}</span>
+                        <span className="text-[#5C5C72]">ID: </span>
+                        <span className="font-mono text-[#5E6AD2] text-[10px] sm:text-xs">{portal.macIdentifier}</span>
                       </p>
                     )}
-                    <div className="mt-4 flex items-center justify-between">
-                      <span className="text-[10px] sm:text-xs text-slate-400">{formatDate(portal.createdAt)}</span>
-                      <span className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-[#4169E1] group-hover:gap-1.5 transition-all">
+                    <div className="mt-3 flex items-center justify-between">
+                      <span className="text-[10px] sm:text-xs text-[#5C5C72]">{formatDate(portal.createdAt)}</span>
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-[#5E6AD2] group-hover:gap-1.5 transition-all">
                         Voir
                         <IconChevronRight size={12} />
                       </span>
@@ -524,31 +524,31 @@ export default function HomePageClient({
             <section className="animate-fade-in">
               <div className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
                 <div>
-                  <span className="text-xs sm:text-sm uppercase tracking-[0.2em] text-purple-600 font-semibold">Applications</span>
-                  <h3 className="mt-1 text-xl sm:text-2xl md:text-3xl font-bold text-[#1a1a2e]">Applications</h3>
+                  <span className="text-[11px] sm:text-xs uppercase tracking-[0.15em] text-purple-400 font-medium">Applications</span>
+                  <h3 className="mt-1 text-xl sm:text-2xl md:text-3xl font-bold text-[#E8E8ED]">Applications</h3>
                 </div>
-                <span className="text-xs sm:text-sm text-slate-500">{appItems.length} application(s)</span>
+                <span className="text-xs sm:text-sm text-[#5C5C72]">{appItems.length} application(s)</span>
               </div>
 
-              <div className="grid grid-cols-1 gap-4 sm:gap-5 md:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {appItems.map((app) => (
                   <article
                     key={app._id}
-                    className="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-sm transition-all duration-200 hover:shadow-md hover:border-purple-300/50 hover:-translate-y-0.5"
+                    className="rounded-xl border border-white/[0.06] bg-[#111118] p-4 sm:p-5 transition-all duration-200 hover:border-white/[0.12] hover:bg-[#1A1A24]"
                   >
-                    <h4 className="text-base sm:text-lg font-semibold text-[#1a1a2e] leading-snug">
+                    <h4 className="text-sm sm:text-base font-medium text-[#E8E8ED] leading-snug">
                       {app.name}
                     </h4>
-                    <p className="mt-1.5 text-xs sm:text-sm text-slate-500 line-clamp-2">
+                    <p className="mt-1.5 text-xs sm:text-sm text-[#5C5C72] line-clamp-2">
                       {app.description || 'Application disponible au téléchargement'}
                     </p>
-                    <div className="mt-3 text-xs sm:text-sm text-slate-400">
+                    <div className="mt-3 text-xs sm:text-sm text-[#5C5C72]">
                       <p>Version: {app.version || '1.0.0'}</p>
                       {app.fileSize && <p>Taille: {app.fileSize}</p>}
                     </div>
                     <a
                       href={app.downloadUrl}
-                      className="mt-4 block w-full rounded-xl bg-[#4169E1] px-4 py-2.5 text-center text-sm font-semibold text-white transition-all hover:bg-[#3457c7] active:scale-[0.98] shadow-sm shadow-[#4169E1]/20"
+                      className="mt-4 block w-full rounded-lg bg-[#5E6AD2] px-4 py-2.5 text-center text-sm font-medium text-white transition-all hover:bg-[#7C6BF7] active:scale-[0.98]"
                     >
                       Télécharger
                     </a>
@@ -562,16 +562,16 @@ export default function HomePageClient({
           {!hasContent && (
             <section className="py-16 sm:py-20 text-center animate-fade-in">
               <div className="mx-auto max-w-md">
-                <div className="mx-auto mb-4 h-16 w-16 rounded-2xl bg-slate-100 flex items-center justify-center">
-                  <IconDocument size={28} className="text-slate-400" />
+                <div className="mx-auto mb-4 h-14 w-14 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
+                  <IconDocument size={24} className="text-[#5C5C72]" />
                 </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-[#1a1a2e] mb-2">Aucun contenu</h3>
-                <p className="text-sm sm:text-base text-slate-500">
+                <h3 className="text-lg sm:text-xl font-semibold text-[#E8E8ED] mb-2">Aucun contenu</h3>
+                <p className="text-sm sm:text-base text-[#5C5C72]">
                   {loadError
                     ? 'Le contenu est temporairement indisponible.'
                     : "Rien n'est publié pour le moment."}
                 </p>
-                <p className="text-xs sm:text-sm text-slate-400 mt-1">
+                <p className="text-xs sm:text-sm text-[#5C5C72] mt-1">
                   {loadError ? 'Réessayez dans un instant.' : 'Revenez un peu plus tard.'}
                 </p>
               </div>

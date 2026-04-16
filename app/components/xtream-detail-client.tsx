@@ -54,23 +54,23 @@ export default function XtreamDetailClient({ xtream }: { xtream: XtreamDetail })
     : false;
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F5F7FF]">
+    <div className="min-h-screen flex flex-col bg-[#0A0A0F]">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/60">
+      <header className="sticky top-0 z-50 bg-[#0A0A0F]/80 backdrop-blur-xl border-b border-white/[0.06]">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center gap-4">
+          <div className="flex h-14 items-center gap-4">
             <Link
               href="/"
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-[#1a1a2e]"
+              className="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[13px] font-medium text-[#8B8B9E] transition hover:bg-white/[0.04] hover:text-[#E8E8ED]"
             >
-              <IconArrowLeft size={18} />
+              <IconArrowLeft size={16} />
               Retour
             </Link>
             <div className="flex items-center gap-2">
-              <div className="h-7 w-7 rounded-md bg-[#4169E1] flex items-center justify-center">
-                <span className="text-white font-bold text-xs">N</span>
+              <div className="h-6 w-6 rounded-md bg-[#5E6AD2] flex items-center justify-center">
+                <span className="text-white font-bold text-[9px]">N</span>
               </div>
-              <span className="font-bold text-[#1a1a2e]">Ngori</span>
+              <span className="font-semibold text-sm text-[#E8E8ED]">Ngori</span>
             </div>
           </div>
         </div>
@@ -81,10 +81,10 @@ export default function XtreamDetailClient({ xtream }: { xtream: XtreamDetail })
         {/* Notice */}
         {notice && (
           <div
-            className={`mb-6 rounded-xl px-4 py-3 text-sm font-medium animate-fade-in ${
+            className={`mb-6 rounded-lg px-4 py-3 text-sm font-medium animate-fade-in ${
               notice.tone === 'success'
-                ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                : 'bg-red-50 text-red-800 border border-red-200'
+                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                : 'bg-red-500/10 text-red-400 border border-red-500/20'
             }`}
           >
             {notice.message}
@@ -92,21 +92,21 @@ export default function XtreamDetailClient({ xtream }: { xtream: XtreamDetail })
         )}
 
         {/* Xtream card */}
-        <article className="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden animate-fade-in">
+        <article className="rounded-xl border border-white/[0.06] bg-[#111118] overflow-hidden animate-fade-in">
           <div className="p-5 sm:p-6 md:p-8">
             {/* Category + Status badges */}
             {(xtream.category || xtream.expirationDate) && (
               <div className="flex flex-wrap items-center gap-2 mb-3">
                 {xtream.category && (
-                  <span className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-emerald-700">
+                  <span className="inline-flex rounded-md bg-emerald-500/15 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-emerald-400">
                     {xtream.category}
                   </span>
                 )}
                 {xtream.expirationDate && (
-                  <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider ${
+                  <span className={`inline-flex rounded-md px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider ${
                     isExpired
-                      ? 'bg-red-50 text-red-700'
-                      : 'bg-emerald-50 text-emerald-700'
+                      ? 'bg-red-500/15 text-red-400'
+                      : 'bg-emerald-500/15 text-emerald-400'
                   }`}>
                     {isExpired ? 'Expiré' : 'Actif'}
                   </span>
@@ -115,77 +115,77 @@ export default function XtreamDetailClient({ xtream }: { xtream: XtreamDetail })
             )}
 
             {/* Title */}
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#1a1a2e] leading-tight">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#E8E8ED] leading-tight">
               {xtream.title}
             </h1>
 
             {/* Description */}
             {xtream.description && (
-              <p className="mt-3 sm:mt-4 text-sm sm:text-base md:text-lg text-slate-600 leading-relaxed">
+              <p className="mt-3 sm:mt-4 text-sm sm:text-base md:text-lg text-[#8B8B9E] leading-relaxed">
                 {xtream.description}
               </p>
             )}
 
             {/* Connection details */}
             <div className="mt-6 space-y-3">
-              <h3 className="text-sm font-semibold text-[#1a1a2e] uppercase tracking-wider">Informations de connexion</h3>
+              <h3 className="text-[11px] font-medium text-[#5C5C72] uppercase tracking-wider">Informations de connexion</h3>
 
               {/* Server URL */}
-              <div className="rounded-xl bg-[#F5F7FF] border border-slate-200/60 p-3 sm:p-4">
+              <div className="rounded-lg bg-[#0A0A0F] border border-white/[0.06] p-3 sm:p-4">
                 <div className="flex items-center justify-between gap-2">
                   <div className="min-w-0 flex-1">
-                    <p className="text-[10px] sm:text-xs uppercase tracking-wider text-slate-400 font-medium">Serveur</p>
-                    <p className="mt-1 text-xs sm:text-sm font-mono text-[#1a1a2e] break-all">{xtream.serverUrl}</p>
+                    <p className="text-[10px] sm:text-xs uppercase tracking-wider text-[#5C5C72] font-medium">Serveur</p>
+                    <p className="mt-1 text-xs sm:text-sm font-mono text-[#E8E8ED] break-all">{xtream.serverUrl}</p>
                   </div>
                   <button
                     onClick={() => void copyField('Serveur', xtream.serverUrl)}
-                    className="flex-shrink-0 inline-flex items-center gap-1 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-slate-600 border border-slate-200 transition hover:bg-slate-50 hover:text-[#1a1a2e]"
+                    className="flex-shrink-0 inline-flex items-center gap-1 rounded-md bg-white/[0.04] border border-white/[0.06] px-2.5 py-1.5 text-xs font-medium text-[#8B8B9E] transition hover:bg-white/[0.08] hover:text-[#E8E8ED]"
                   >
-                    <IconCopy size={14} />
+                    <IconCopy size={13} />
                     Copier
                   </button>
                 </div>
               </div>
 
               {/* Username */}
-              <div className="rounded-xl bg-[#F5F7FF] border border-slate-200/60 p-3 sm:p-4">
+              <div className="rounded-lg bg-[#0A0A0F] border border-white/[0.06] p-3 sm:p-4">
                 <div className="flex items-center justify-between gap-2">
                   <div className="min-w-0 flex-1">
-                    <p className="text-[10px] sm:text-xs uppercase tracking-wider text-slate-400 font-medium">Utilisateur</p>
-                    <p className="mt-1 text-xs sm:text-sm font-mono text-[#1a1a2e]">{xtream.username}</p>
+                    <p className="text-[10px] sm:text-xs uppercase tracking-wider text-[#5C5C72] font-medium">Utilisateur</p>
+                    <p className="mt-1 text-xs sm:text-sm font-mono text-[#E8E8ED]">{xtream.username}</p>
                   </div>
                   <button
                     onClick={() => void copyField('Utilisateur', xtream.username)}
-                    className="flex-shrink-0 inline-flex items-center gap-1 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-slate-600 border border-slate-200 transition hover:bg-slate-50 hover:text-[#1a1a2e]"
+                    className="flex-shrink-0 inline-flex items-center gap-1 rounded-md bg-white/[0.04] border border-white/[0.06] px-2.5 py-1.5 text-xs font-medium text-[#8B8B9E] transition hover:bg-white/[0.08] hover:text-[#E8E8ED]"
                   >
-                    <IconCopy size={14} />
+                    <IconCopy size={13} />
                     Copier
                   </button>
                 </div>
               </div>
 
               {/* Password */}
-              <div className="rounded-xl bg-[#F5F7FF] border border-slate-200/60 p-3 sm:p-4">
+              <div className="rounded-lg bg-[#0A0A0F] border border-white/[0.06] p-3 sm:p-4">
                 <div className="flex items-center justify-between gap-2">
                   <div className="min-w-0 flex-1">
-                    <p className="text-[10px] sm:text-xs uppercase tracking-wider text-slate-400 font-medium">Mot de passe</p>
-                    <p className="mt-1 text-xs sm:text-sm font-mono text-[#1a1a2e]">
+                    <p className="text-[10px] sm:text-xs uppercase tracking-wider text-[#5C5C72] font-medium">Mot de passe</p>
+                    <p className="mt-1 text-xs sm:text-sm font-mono text-[#E8E8ED]">
                       {showPassword ? xtream.password : '••••••••'}
                     </p>
                   </div>
                   <div className="flex gap-2 flex-shrink-0">
                     <button
                       onClick={() => setShowPassword(!showPassword)}
-                      className="inline-flex items-center gap-1 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-slate-600 border border-slate-200 transition hover:bg-slate-50 hover:text-[#1a1a2e]"
+                      className="inline-flex items-center gap-1 rounded-md bg-white/[0.04] border border-white/[0.06] px-2.5 py-1.5 text-xs font-medium text-[#8B8B9E] transition hover:bg-white/[0.08] hover:text-[#E8E8ED]"
                     >
-                      {showPassword ? <IconEyeOff size={14} /> : <IconEye size={14} />}
+                      {showPassword ? <IconEyeOff size={13} /> : <IconEye size={13} />}
                       {showPassword ? 'Cacher' : 'Voir'}
                     </button>
                     <button
                       onClick={() => void copyField('Mot de passe', xtream.password)}
-                      className="inline-flex items-center gap-1 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-slate-600 border border-slate-200 transition hover:bg-slate-50 hover:text-[#1a1a2e]"
+                      className="inline-flex items-center gap-1 rounded-md bg-white/[0.04] border border-white/[0.06] px-2.5 py-1.5 text-xs font-medium text-[#8B8B9E] transition hover:bg-white/[0.08] hover:text-[#E8E8ED]"
                     >
-                      <IconCopy size={14} />
+                      <IconCopy size={13} />
                       Copier
                     </button>
                   </div>
@@ -195,20 +195,20 @@ export default function XtreamDetailClient({ xtream }: { xtream: XtreamDetail })
 
             {/* Metadata grid */}
             <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4">
-              <div className="rounded-xl bg-[#F5F7FF] border border-slate-200/60 p-3 sm:p-4">
-                <p className="text-[10px] sm:text-xs uppercase tracking-wider text-slate-400 font-medium">Créé le</p>
-                <p className="mt-1 text-xs sm:text-sm font-medium text-[#1a1a2e]">{formatDate(xtream.createdAt)}</p>
+              <div className="rounded-lg bg-[#0A0A0F] border border-white/[0.06] p-3 sm:p-4">
+                <p className="text-[10px] sm:text-xs uppercase tracking-wider text-[#5C5C72] font-medium">Créé le</p>
+                <p className="mt-1 text-xs sm:text-sm font-medium text-[#E8E8ED]">{formatDate(xtream.createdAt)}</p>
               </div>
               {xtream.updatedAt && (
-                <div className="rounded-xl bg-[#F5F7FF] border border-slate-200/60 p-3 sm:p-4">
-                  <p className="text-[10px] sm:text-xs uppercase tracking-wider text-slate-400 font-medium">Mis à jour</p>
-                  <p className="mt-1 text-xs sm:text-sm font-medium text-[#1a1a2e]">{formatDate(xtream.updatedAt)}</p>
+                <div className="rounded-lg bg-[#0A0A0F] border border-white/[0.06] p-3 sm:p-4">
+                  <p className="text-[10px] sm:text-xs uppercase tracking-wider text-[#5C5C72] font-medium">Mis à jour</p>
+                  <p className="mt-1 text-xs sm:text-sm font-medium text-[#E8E8ED]">{formatDate(xtream.updatedAt)}</p>
                 </div>
               )}
               {xtream.expirationDate && (
-                <div className="rounded-xl bg-[#F5F7FF] border border-slate-200/60 p-3 sm:p-4">
-                  <p className="text-[10px] sm:text-xs uppercase tracking-wider text-slate-400 font-medium">Expiration</p>
-                  <p className={`mt-1 text-xs sm:text-sm font-medium ${isExpired ? 'text-red-600' : 'text-emerald-600'}`}>
+                <div className="rounded-lg bg-[#0A0A0F] border border-white/[0.06] p-3 sm:p-4">
+                  <p className="text-[10px] sm:text-xs uppercase tracking-wider text-[#5C5C72] font-medium">Expiration</p>
+                  <p className={`mt-1 text-xs sm:text-sm font-medium ${isExpired ? 'text-red-400' : 'text-emerald-400'}`}>
                     {formatDate(xtream.expirationDate)}
                   </p>
                 </div>
@@ -219,14 +219,14 @@ export default function XtreamDetailClient({ xtream }: { xtream: XtreamDetail })
             <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3">
               <button
                 onClick={() => void copyAllDetails()}
-                className="inline-flex items-center justify-center gap-2 flex-1 rounded-xl bg-[#4169E1] px-6 py-3 text-sm sm:text-base font-semibold text-white transition hover:bg-[#3457c7] active:scale-[0.98] shadow-md shadow-[#4169E1]/20"
+                className="inline-flex items-center justify-center gap-2 flex-1 rounded-lg bg-[#5E6AD2] px-6 py-3 text-sm font-medium text-white transition hover:bg-[#7C6BF7] active:scale-[0.98]"
               >
-                <IconCopy size={18} />
+                <IconCopy size={16} />
                 Copier toutes les informations
               </button>
               <Link
                 href="/"
-                className="flex-1 rounded-xl bg-slate-100 px-6 py-3 text-center text-sm sm:text-base font-semibold text-slate-600 transition hover:bg-slate-200 hover:text-[#1a1a2e]"
+                className="flex-1 rounded-lg bg-white/[0.04] border border-white/[0.06] px-6 py-3 text-center text-sm font-medium text-[#8B8B9E] transition hover:bg-white/[0.08] hover:text-[#E8E8ED]"
               >
                 Retour à l'accueil
               </Link>

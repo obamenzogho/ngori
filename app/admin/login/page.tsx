@@ -43,30 +43,32 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <div className="w-full max-w-md rounded-lg border border-slate-700 bg-slate-800/50 p-8 backdrop-blur">
-        <h1 className="mb-2 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-center text-3xl font-bold text-transparent">
-          Ngori Admin
-        </h1>
-        <p className="mb-6 text-center text-sm text-slate-400">
-          Connectez-vous pour gerer vos contenus.
-        </p>
+    <div className="flex min-h-screen items-center justify-center bg-[#0A0A0F] dot-grid">
+      <div className="w-full max-w-md rounded-xl border border-white/[0.06] bg-[#111118] p-8 animate-fade-in">
+        <div className="mb-8 text-center">
+          <h1 className="ngori-glow mb-2 text-3xl font-bold text-[#E8E8ED]">
+            Ngori Admin
+          </h1>
+          <p className="text-sm text-[#8B8B9E]">
+            Connectez-vous pour gérer vos contenus.
+          </p>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <label className="block">
-            <span className="mb-2 block text-slate-300">Mot de passe admin</span>
+            <span className="mb-2 block text-sm font-medium text-[#8B8B9E]">Mot de passe admin</span>
             <input
               type="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              className="w-full rounded border border-slate-600 bg-slate-700 px-4 py-2 text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none"
+              className="linear-input w-full"
               placeholder="Saisissez votre mot de passe"
               required
             />
           </label>
 
           {error && (
-            <div className="rounded border border-red-500 bg-red-500/20 px-4 py-2 text-red-200">
+            <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
               {error}
             </div>
           )}
@@ -74,15 +76,15 @@ export default function AdminLogin() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded bg-blue-600 py-2 font-semibold text-white transition hover:bg-blue-700 disabled:bg-blue-800"
+            className="linear-btn linear-btn-primary w-full"
           >
             {loading ? 'Connexion...' : 'Se connecter'}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-slate-400">
-          Retour a{' '}
-          <Link href="/" className="text-blue-400 hover:text-blue-300">
+        <p className="mt-6 text-center text-sm text-[#5C5C72]">
+          Retour à{' '}
+          <Link href="/" className="text-[#5E6AD2] hover:text-[#7C6BF7] transition-colors">
             l&apos;accueil
           </Link>
         </p>
@@ -90,3 +92,4 @@ export default function AdminLogin() {
     </div>
   );
 }
+

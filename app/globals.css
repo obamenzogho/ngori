@@ -1,14 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  --background: #F5F7FF;
-  --foreground: #1a1a2e;
-  --primary: #4169E1;
-  --primary-hover: #3457c7;
-  --primary-light: #eef1fb;
-  --surface: #ffffff;
-  --border: #e2e8f0;
-  --muted: #64748b;
+  /* ─── Linear-inspired Dark Palette ─── */
+  --background: #0A0A0F;
+  --background-surface: #111118;
+  --background-elevated: #1A1A24;
+  --foreground: #E8E8ED;
+  --foreground-secondary: #8B8B9E;
+  --foreground-muted: #5C5C72;
+  --primary: #5E6AD2;
+  --primary-hover: #7C6BF7;
+  --primary-subtle: rgba(94, 106, 210, 0.12);
+  --surface: #13131A;
+  --border: rgba(255, 255, 255, 0.06);
+  --border-hover: rgba(255, 255, 255, 0.12);
+  --muted: #5C5C72;
+  --success: #4ADE80;
+  --success-subtle: rgba(74, 222, 128, 0.1);
+  --warning: #FBBF24;
+  --warning-subtle: rgba(251, 191, 36, 0.1);
+  --error: #F87171;
+  --error-subtle: rgba(248, 113, 113, 0.1);
   --font-geist-sans: var(--font-geist-sans);
   --font-geist-mono: var(--font-geist-mono);
 }
@@ -18,9 +30,10 @@
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
-  --color-primary-light: var(--primary-light);
+  --color-primary-subtle: var(--primary-subtle);
   --color-surface: var(--surface);
   --color-border: var(--border);
+  --color-border-hover: var(--border-hover);
   --color-muted: var(--muted);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -42,6 +55,31 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Selection */
+::selection {
+  background: rgba(94, 106, 210, 0.3);
+  color: #fff;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
 /* Ad containers — responsive, no overflow hidden */
 #adsterra-home-footer-banner {
   min-height: 90px;
@@ -59,12 +97,134 @@ body {
   }
 }
 
-/* Smooth page transitions */
+/* ─── Animations ─── */
+
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
 .animate-fade-in {
-  animation: fadeIn 0.3s ease-out;
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.animate-fade-in-scale {
+  animation: fadeInScale 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ─── Linear-style Card ─── */
+
+.linear-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.linear-card:hover {
+  border-color: var(--border-hover);
+  background: var(--background-elevated);
+}
+
+/* ─── Linear-style Badge ─── */
+
+.linear-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+/* ─── Linear-style Button ─── */
+
+.linear-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+.linear-btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.linear-btn-primary:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.linear-btn-primary:active {
+  transform: translateY(0);
+}
+
+.linear-btn-ghost {
+  background: transparent;
+  color: var(--foreground-secondary);
+  border: 1px solid var(--border);
+}
+
+.linear-btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--foreground);
+  border-color: var(--border-hover);
+}
+
+/* ─── Linear-style Input ─── */
+
+.linear-input {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--foreground);
+  font-size: 14px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  outline: none;
+}
+
+.linear-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-subtle);
+}
+
+.linear-input::placeholder {
+  color: var(--foreground-muted);
+}
+
+/* ─── Glow effect for logo ─── */
+
+.ngori-glow {
+  box-shadow: 0 0 20px rgba(94, 106, 210, 0.3), 0 0 60px rgba(94, 106, 210, 0.1);
+}
+
+/* ─── Dot grid background pattern ─── */
+
+.dot-grid {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 24px 24px;
 }

@@ -20,38 +20,40 @@ export default function AdminHeader() {
   };
 
   const navLinks = [
-    { href: '/admin/dashboard', label: '🏠 Dashboard', active: pathname === '/admin/dashboard' },
-    { href: '/admin/analytics', label: '📊 Analytics', active: pathname === '/admin/analytics' },
+    { href: '/admin/dashboard', label: 'Dashboard', active: pathname === '/admin/dashboard' },
+    { href: '/admin/analytics', label: 'Analytics', active: pathname === '/admin/analytics' },
   ];
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-700 bg-slate-900/95 backdrop-blur">
-      <div className="container mx-auto flex items-center justify-between px-4 py-3">
+    <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-[#0A0A0F]/80 backdrop-blur-xl">
+      <div className="mx-auto max-w-7xl flex items-center justify-between px-4 py-2.5">
         {/* Logo */}
-        <Link href="/admin/dashboard" className="shrink-0">
-          <h1 className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-2xl font-bold text-transparent sm:text-3xl">
-            Ngori Admin
-          </h1>
+        <Link href="/admin/dashboard" className="flex items-center gap-2.5 shrink-0">
+          <div className="h-7 w-7 rounded-md bg-[#5E6AD2] flex items-center justify-center ngori-glow">
+            <span className="text-white font-bold text-[10px]">N</span>
+          </div>
+          <span className="text-sm font-semibold text-[#E8E8ED] tracking-tight">Ngori Admin</span>
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden items-center gap-2 md:flex">
+        <nav className="hidden md:flex items-center gap-0.5">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[13px] font-medium transition-all duration-150 ${
                 link.active
-                  ? 'bg-blue-600 text-white'
-                  : 'text-slate-300 hover:bg-slate-700 hover:text-white'
+                  ? 'bg-white/[0.08] text-white'
+                  : 'text-[#8B8B9E] hover:text-[#E8E8ED] hover:bg-white/[0.04]'
               }`}
             >
               {link.label}
             </Link>
           ))}
+          <div className="ml-2 h-4 w-px bg-white/[0.06]" />
           <button
             onClick={handleLogout}
-            className="ml-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-700"
+            className="ml-2 px-3 py-1.5 rounded-md text-[13px] font-medium text-[#8B8B9E] transition hover:text-red-400 hover:bg-red-500/10"
           >
             Déconnexion
           </button>
@@ -60,15 +62,15 @@ export default function AdminHeader() {
         {/* Mobile Hamburger Button */}
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="inline-flex items-center justify-center rounded-lg p-2 text-slate-300 hover:bg-slate-700 hover:text-white md:hidden"
+          className="inline-flex items-center justify-center rounded-md p-2 text-[#8B8B9E] hover:bg-white/[0.04] hover:text-[#E8E8ED] md:hidden"
           aria-label="Menu"
         >
           {mobileMenuOpen ? (
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           ) : (
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           )}
@@ -77,17 +79,17 @@ export default function AdminHeader() {
 
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
-        <nav className="border-t border-slate-700 bg-slate-900 md:hidden">
-          <div className="space-y-1 px-4 py-3">
+        <nav className="border-t border-white/[0.06] bg-[#0A0A0F] md:hidden">
+          <div className="space-y-0.5 px-4 py-3">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`block rounded-lg px-4 py-3 text-sm font-medium transition ${
+                className={`block rounded-md px-3 py-2.5 text-[13px] font-medium transition ${
                   link.active
-                    ? 'bg-blue-600 text-white'
-                    : 'text-slate-300 hover:bg-slate-700 hover:text-white'
+                    ? 'bg-white/[0.08] text-white'
+                    : 'text-[#8B8B9E] hover:text-[#E8E8ED] hover:bg-white/[0.04]'
                 }`}
               >
                 {link.label}
@@ -95,7 +97,7 @@ export default function AdminHeader() {
             ))}
             <button
               onClick={handleLogout}
-              className="w-full rounded-lg bg-red-600 px-4 py-3 text-left text-sm font-medium text-white transition hover:bg-red-700"
+              className="w-full rounded-md px-3 py-2.5 text-left text-[13px] font-medium text-[#8B8B9E] transition hover:text-red-400 hover:bg-red-500/10"
             >
               Déconnexion
             </button>
