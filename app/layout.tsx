@@ -17,6 +17,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'Ngori — Plateforme IPTV',
   description: 'Partagez playlists M3U, accès Xtream, portails Mac et applications',
+  icons: {
+    icon: '/logo.png',
+  },
 };
 
 export default function RootLayout({

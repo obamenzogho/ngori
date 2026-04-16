@@ -68,10 +68,8 @@ export default function Navbar({ activeView, onViewChange }: NavbarProps) {
         <div className="flex h-14 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="h-7 w-7 rounded-md bg-[#5E6AD2] flex items-center justify-center ngori-glow transition-shadow group-hover:shadow-[0_0_24px_rgba(94,106,210,0.4)]">
-              <span className="text-white font-bold text-xs">N</span>
-            </div>
-            <span className="text-base font-semibold text-[#E8E8ED] tracking-tight">Ngori</span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="Ngori" className="h-8 w-auto transition-transform group-hover:scale-105" />
           </Link>
 
           {/* Desktop nav */}

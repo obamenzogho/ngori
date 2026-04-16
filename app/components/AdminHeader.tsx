@@ -29,10 +29,8 @@ export default function AdminHeader() {
       <div className="mx-auto max-w-7xl flex items-center justify-between px-4 py-2.5">
         {/* Logo */}
         <Link href="/admin/dashboard" className="flex items-center gap-2.5 shrink-0">
-          <div className="h-7 w-7 rounded-md bg-[#5E6AD2] flex items-center justify-center ngori-glow">
-            <span className="text-white font-bold text-[10px]">N</span>
-          </div>
-          <span className="text-sm font-semibold text-[#E8E8ED] tracking-tight">Ngori Admin</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="Ngori Admin" className="h-8 w-auto" />
         </Link>
 
         {/* Desktop Navigation */}
