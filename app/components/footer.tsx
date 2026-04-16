@@ -15,7 +15,7 @@ export default function Footer() {
           <div className="text-center">
             <div className="flex items-center justify-center mb-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.png" alt="Ngori" className="h-6 w-auto" />
+              <img src="/logo.png?v=3" alt="Ngori" className="h-6 w-auto" />
             </div>
             <p className="text-xs text-[#5C5C72]">
               &copy; {new Date().getFullYear()} Ngori — Partager et découvrir du contenu

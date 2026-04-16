@@ -69,7 +69,7 @@ export default function Navbar({ activeView, onViewChange }: NavbarProps) {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="Ngori" className="h-8 w-auto transition-transform group-hover:scale-105" />
+            <img src="/logo.png?v=3" alt="Ngori" className="h-8 w-auto transition-transform group-hover:scale-105" />
           </Link>
 
           {/* Desktop nav */}

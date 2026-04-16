@@ -30,7 +30,7 @@ export default function AdminHeader() {
         {/* Logo */}
         <Link href="/admin/dashboard" className="flex items-center gap-2.5 shrink-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="Ngori Admin" className="h-8 w-auto" />
+          <img src="/logo.png?v=3" alt="Ngori Admin" className="h-8 w-auto" />
         </Link>
 
         {/* Desktop Navigation */}

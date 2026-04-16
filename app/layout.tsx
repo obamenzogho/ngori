@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   title: 'Ngori — Plateforme IPTV',
   description: 'Partagez playlists M3U, accès Xtream, portails Mac et applications',
   icons: {
-    icon: '/logo.png',
+    icon: '/logo.png?v=3',
   },
 };
 
