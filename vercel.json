@@ -3,11 +3,5 @@
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
   "installCommand": "npm install",
-  "devCommand": "npm run dev",
-  "crons": [
-    {
-      "path": "/api/analytics/aggregate",
-      "schedule": "0 * * * *"
-    }
-  ]
+  "devCommand": "npm run dev"
 }
