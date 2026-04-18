@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Suspense } from "react";
 import AdBlockDetector from "./components/AdBlockDetector";
 import AnalyticsTracker from "./components/AnalyticsTracker";
 import NotificationGate from "./components/NotificationGate";
@@ -32,7 +33,9 @@ export default function RootLayout({
     <html lang="fr" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <head />
       <body className="min-h-full flex flex-col bg-[#0A0A0F] text-[#E8E8ED]" suppressHydrationWarning={true}>
-        <AnalyticsTracker />
+        <Suspense fallback={null}>
+          <AnalyticsTracker />
+        </Suspense>
         <NotificationGate />
         <AdBlockDetector>
           {children}

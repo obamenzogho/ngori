@@ -1,7 +1,7 @@
 import { ADMIN_SESSION_COOKIE, verifySessionToken } from '@/lib/auth-token';
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function proxy(request: NextRequest) {
+export default async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const isAdminLoginPage = pathname === '/admin/login';
   const isAdminPage = pathname.startsWith('/admin') && !isAdminLoginPage;
