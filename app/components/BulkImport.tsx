@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, ReactNode } from 'react';
 
 type ContentType = 'playlists' | 'xtream' | 'mac-portal';
 
@@ -59,11 +59,23 @@ function getStatusColor(entry: AnalyzedEntry): 'green' | 'yellow' | 'red' {
   return 'green';
 }
 
-function getStatusEmoji(entry: AnalyzedEntry): string {
+function getStatusEmoji(entry: AnalyzedEntry): React.ReactNode {
   const color = getStatusColor(entry);
-  if (color === 'red') return '🔴';
-  if (color === 'yellow') return '🟡';
-  return '🟢';
+  if (color === 'red') return (
+    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="#EF4444">
+      <circle cx="12" cy="12" r="10" />
+    </svg>
+  );
+  if (color === 'yellow') return (
+    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="#EAB308">
+      <circle cx="12" cy="12" r="10" />
+    </svg>
+  );
+  return (
+    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="#22C55E">
+      <circle cx="12" cy="12" r="10" />
+    </svg>
+  );
 }
 
 function getStatusLabel(entry: AnalyzedEntry): string {
@@ -342,7 +354,14 @@ export default function BulkImport({ activeTab, onImportComplete }: BulkImportPr
     return (
       <div className="rounded-xl border border-white/[0.06] bg-[#111118] p-6">
         <div className="mb-4">
-          <h2 className="text-xl font-bold text-[#E8E8ED]">📦 Import en masse automatisé</h2>
+          <h2 className="text-xl font-bold text-[#E8E8ED] flex items-center gap-2">
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+              <line x1="12" y1="22.08" x2="12" y2="12" />
+            </svg>
+            Import en masse automatisé
+          </h2>
           <p className="mt-1 text-sm text-[#5C5C72]">
             Collez vos URLs brutes ci-dessous, une par ligne. Le système détecte automatiquement le type
             (M3U, Xtream, Mac Portal) et analyse chaque URL.
@@ -370,9 +389,13 @@ export default function BulkImport({ activeTab, onImportComplete }: BulkImportPr
           <button
             onClick={handleAnalyze}
             disabled={!rawUrls.trim()}
-            className="linear-btn linear-btn-primary"
+            className="linear-btn linear-btn-primary flex items-center gap-2"
           >
-            🔍 Analyser les URLs
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            Analyser les URLs
           </button>
           {rawUrls.trim() && (
             <span className="text-sm text-[#5C5C72]">
@@ -419,7 +442,13 @@ export default function BulkImport({ activeTab, onImportComplete }: BulkImportPr
                     : 'border-[#4ADE80]/20 bg-[#4ADE80]/5'
               }`}
             >
-              <span>{entry.analyzing ? '⏳' : getStatusEmoji(entry)}</span>
+              <span className="text-xs text-[#5C5C72]">
+                      {entry.analyzing ? (
+                        <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                        </svg>
+                      ) : getStatusEmoji(entry)}
+                    </span>
               <span className="flex-1 truncate text-[#8B8B9E]">{entry.url}</span>
               {!entry.analyzing && (
                 <span className="text-xs text-[#5C5C72]">{getTypeLabel(entry.type)}</span>
@@ -455,16 +484,29 @@ export default function BulkImport({ activeTab, onImportComplete }: BulkImportPr
 
         {/* Stats */}
         <div className="mb-4 flex flex-wrap gap-3">
-          <div className="rounded-lg border border-[#4ADE80]/20 bg-[#4ADE80]/10 px-4 py-2">
-            <span className="text-sm text-[#4ADE80]">🟢 {validCount} valide(s)</span>
+          <div className="rounded-lg border border-[#4ADE80]/20 bg-[#4ADE80]/10 px-4 py-2 flex items-center gap-2">
+            <svg className="w-4 h-4 text-[#4ADE80]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="9 12 12 15 16 10" />
+            </svg>
+            <span className="text-sm text-[#4ADE80]">{validCount} valide(s)</span>
           </div>
           {errorCount > 0 && (
-            <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-2">
-              <span className="text-sm text-red-400">🔴 {errorCount} erreur(s)</span>
+            <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-2 flex items-center gap-2">
+              <svg className="w-4 h-4 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="15" y1="9" x2="9" y2="15" />
+                <line x1="9" y1="9" x2="15" y2="15" />
+              </svg>
+              <span className="text-sm text-red-400">{errorCount} erreur(s)</span>
             </div>
           )}
-          <div className="rounded-lg border border-[#5E6AD2]/20 bg-[#5E6AD2]/10 px-4 py-2">
-            <span className="text-sm text-[#8B93E6]">☑️ {selectedEntries.length} sélectionnée(s)</span>
+          <div className="rounded-lg border border-[#5E6AD2]/20 bg-[#5E6AD2]/10 px-4 py-2 flex items-center gap-2">
+            <svg className="w-4 h-4 text-[#8B93E6]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 11 12 14 22 4" />
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+            </svg>
+            <span className="text-sm text-[#8B93E6]">{selectedEntries.length} sélectionnée(s)</span>
           </div>
         </div>
 
@@ -542,9 +584,18 @@ export default function BulkImport({ activeTab, onImportComplete }: BulkImportPr
                       : '—'}
                   </td>
                   <td className="px-3 py-2 text-xs text-[#8B8B9E]">
-                    {entry.categories.totalLive > 0 && <span className="mr-1">📺 {entry.categories.totalLive}</span>}
-                    {entry.categories.totalVod > 0 && <span className="mr-1">🎬 {entry.categories.totalVod}</span>}
-                    {entry.categories.totalSeries > 0 && <span className="mr-1">📺 {entry.categories.totalSeries}</span>}
+                    {entry.categories.totalLive > 0 && <span className="mr-2 inline-flex items-center gap-1">
+                      <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" /></svg>
+                      {entry.categories.totalLive}
+                    </span>}
+                    {entry.categories.totalVod > 0 && <span className="mr-2 inline-flex items-center gap-1">
+                      <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" /><line x1="7" y1="2" x2="7" y2="22" /><line x1="17" y1="2" x2="17" y2="22" /><line x1="2" y1="12" x2="22" y2="12" /><line x1="2" y1="7" x2="7" y2="7" /><line x1="2" y1="17" x2="7" y2="17" /><line x1="17" y1="17" x2="22" y2="17" /><line x1="17" y1="7" x2="22" y2="7" /></svg>
+                      {entry.categories.totalVod}
+                    </span>}
+                    {entry.categories.totalSeries > 0 && <span className="mr-2 inline-flex items-center gap-1">
+                      <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" /><line x1="7" y1="2" x2="7" y2="22" /><line x1="17" y1="2" x2="17" y2="22" /><line x1="2" y1="12" x2="22" y2="12" /></svg>
+                      {entry.categories.totalSeries}
+                    </span>}
                     {entry.categories.totalLive === 0 && entry.categories.totalVod === 0 && entry.categories.totalSeries === 0 && '—'}
                   </td>
                 </tr>
@@ -558,9 +609,13 @@ export default function BulkImport({ activeTab, onImportComplete }: BulkImportPr
           <button
             onClick={handleImport}
             disabled={selectedEntries.length === 0}
-            className="linear-btn linear-btn-primary"
+            className="linear-btn linear-btn-primary flex items-center gap-2"
           >
-            🚀 Publier {selectedEntries.length} entrée(s)
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13" />
+              <polygon points="22 2 15 22 11 13 2 9 22 2" />
+            </svg>
+            Publier {selectedEntries.length} entrée(s)
           </button>
           <button
             onClick={handleReset}
@@ -604,7 +659,18 @@ export default function BulkImport({ activeTab, onImportComplete }: BulkImportPr
       <div className="rounded-xl border border-white/[0.06] bg-[#111118] p-6">
         <div className="mb-6 text-center">
           <div className="mx-auto mb-4 text-5xl">
-            {importResult.errorCount === 0 ? '✅' : '⚠️'}
+            {importResult.errorCount === 0 ? (
+              <svg className="w-16 h-16 mx-auto text-[#4ADE80]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="9 12 12 15 16 10" />
+              </svg>
+            ) : (
+              <svg className="w-16 h-16 mx-auto text-yellow-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+            )}
           </div>
           <h2 className="text-xl font-bold text-[#E8E8ED]">Import terminé</h2>
         </div>

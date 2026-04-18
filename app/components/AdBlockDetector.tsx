@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useAdBlockDetector } from '@/hooks/useAdBlockDetector';
+import { trackAdBlockDetected } from '@/lib/tracker';
 import AdBlockModal from './AdBlockModal';
 import FakeAd from './FakeAd';
 
@@ -27,11 +28,13 @@ export default function AdBlockDetector({
     useAdBlockDetector();
   const bodyScrollRef = useRef<string | null>(null);
 
-  // Bloquer le scroll du body quand la modal est visible
+  // Bloquer le scroll + signaler aux analytics quand la modal est visible
   useEffect(() => {
     if (isAdBlockDetected && !disabled) {
       bodyScrollRef.current = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
+      // Signaler la détection à l'analytics (une seule fois par session)
+      trackAdBlockDetected();
     } else {
       document.body.style.overflow = bodyScrollRef.current || '';
     }
@@ -48,9 +51,6 @@ export default function AdBlockDetector({
 
   return (
     <>
-      {/* Élément appât invisible */}
-      <FakeAd />
-
       {/* Contenu de l'application */}
       {children}
 

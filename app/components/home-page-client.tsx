@@ -1,12 +1,119 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 
 import Footer from './footer';
 import { formatDate } from './format-date';
 import { IconChevronRight, IconDocument } from './icons';
 import Navbar, { type ContentView } from './navbar';
+import { trackClick } from '@/lib/tracker';
+
+// ─── Premium Animations Components ───
+
+function ElectricFilaments() {
+  const [pos, setPos] = useState({ x: -1000, y: -1000 });
+  const [trail, setTrail] = useState<{ x: number; y: number; id: number }[]>([]);
+  const trailRef = useRef<{ x: number; y: number; id: number }[]>([]);
+  const idRef = useRef(0);
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      const newPos = { x: e.clientX, y: e.clientY };
+      setPos(newPos);
+
+      const newTrail = [...trailRef.current, { ...newPos, id: idRef.current++ }];
+      if (newTrail.length > 12) newTrail.shift();
+      trailRef.current = newTrail;
+      setTrail(newTrail);
+    };
+
+    window.addEventListener('mousemove', onMove, { passive: true });
+    return () => window.removeEventListener('mousemove', onMove);
+  }, []);
+
+  return (
+    <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+      <svg className="absolute inset-0 w-full h-full">
+        <defs>
+          <linearGradient id="electricGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="rgba(94,106,210,0)" />
+            <stop offset="50%" stopColor="rgba(94,106,210,0.6)" />
+            <stop offset="100%" stopColor="rgba(124,107,247,0)" />
+          </linearGradient>
+          <filter id="electricGlow">
+            <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+        {trail.map((point, i) => {
+          const next = trail[i + 1];
+          if (!next) return null;
+          const opacity = (i / trail.length) * 0.8;
+          const width = (i / trail.length) * 3 + 1;
+          const midX = (point.x + next.x) / 2;
+          const midY = (point.y + next.y) / 2;
+          const ctrl1x = point.x + (next.x - point.x) * 0.25 + (Math.random() - 0.5) * 30;
+          const ctrl1y = point.y + (next.y - point.y) * 0.25 + (Math.random() - 0.5) * 30;
+          const ctrl2x = point.x + (next.x - point.x) * 0.75 + (Math.random() - 0.5) * 30;
+          const ctrl2y = point.y + (next.y - point.y) * 0.75 + (Math.random() - 0.5) * 30;
+          const path = `M ${point.x} ${point.y} C ${ctrl1x} ${ctrl1y}, ${ctrl2x} ${ctrl2y}, ${next.x} ${next.y}`;
+          return (
+            <path
+              key={point.id}
+              d={path}
+              stroke="url(#electricGrad)"
+              strokeWidth={width}
+              fill="none"
+              strokeLinecap="round"
+              filter="url(#electricGlow)"
+              style={{ opacity, animation: 'electricPulse 0.3s ease-out forwards' }}
+            />
+          );
+        })}
+        {trail.length > 2 && (
+          <circle
+            cx={trail[trail.length - 1].x}
+            cy={trail[trail.length - 1].y}
+            r={6 + Math.random() * 4}
+            fill="rgba(94,106,210,0.4)"
+            filter="url(#electricGlow)"
+            style={{ animation: 'sparkBurst 0.4s ease-out forwards' }}
+          />
+        )}
+      </svg>
+      <style>{`
+        @keyframes electricPulse {
+          0% { stroke-opacity: 1; }
+          100% { stroke-opacity: 0; }
+        }
+        @keyframes sparkBurst {
+          0% { transform: scale(1); opacity: 1; }
+          100% { transform: scale(2); opacity: 0; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+function createRipple(e: React.MouseEvent<HTMLElement>) {
+  const target = e.currentTarget as HTMLElement;
+  const rect = target.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height);
+  const x = e.clientX - rect.left - size / 2;
+  const y = e.clientY - rect.top - size / 2;
+
+  const ripple = document.createElement('span');
+  ripple.className = 'absolute rounded-full bg-white/10 animate-ripple pointer-events-none';
+  ripple.style.cssText = `width:${size}px;height:${size}px;left:${x}px;top:${y}px`;
+  target.style.position = 'relative';
+  target.style.overflow = 'hidden';
+  target.appendChild(ripple);
+  setTimeout(() => ripple.remove(), 600);
+}
 
 const VISITOR_FLAG = 'ngori_visited';
 
@@ -236,7 +343,8 @@ export default function HomePageClient({
   const showApps = activeView === 'all' || activeView === 'appItems';
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#0A0A0F] dot-grid">
+    <div className="min-h-screen flex flex-col bg-background dot-grid relative">
+      <ElectricFilaments />
       <Navbar activeView={activeView} onViewChange={setActiveView} />
 
       {/* Main Content */}
@@ -292,7 +400,7 @@ export default function HomePageClient({
               </div>
 
               <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
-                {recentFeed.slice(0, 8).map((item) => {
+                {recentFeed.slice(0, 8).map((item, i) => {
                   const badge = TYPE_BADGE[item.type];
                   const detailHref =
                     item.type === 'playlists'
@@ -307,8 +415,11 @@ export default function HomePageClient({
                     <Link
                       key={`${item.type}-${item.id}`}
                       href={detailHref || '/'}
-                      className="group block rounded-xl border border-white/[0.06] bg-[#111118] p-5 transition-all duration-200 hover:border-white/[0.12] hover:bg-[#1A1A24]"
+                      onClick={() => trackClick('recent_feed_card', item.title)}
+                      className="group block p-5 linear-card animate-fade-in"
+                      style={{ animationDelay: `${i * 50}ms`, '--shine-pos': '-100%' } as React.CSSProperties}
                     >
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.03] to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
                       <div className="mb-3 flex items-center justify-between gap-2">
                         {badge && (
                           <span className={`inline-flex rounded-md px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider ${badge.bg} ${badge.text}`}>
@@ -368,7 +479,8 @@ export default function HomePageClient({
                   <Link
                     key={playlist._id}
                     href={`/playlist/${playlist._id}`}
-                    className="group block rounded-xl border border-white/[0.06] bg-[#111118] transition-all duration-200 hover:border-white/[0.12] hover:bg-[#1A1A24] overflow-hidden"
+                    onClick={() => trackClick('playlist_card', playlist.title)}
+                    className="group block linear-card overflow-hidden"
                   >
                     {playlist.logo && (
                       <div className="h-36 sm:h-44 overflow-hidden bg-[#1A1A24]">
@@ -418,7 +530,8 @@ export default function HomePageClient({
                   <Link
                     key={code._id}
                     href={`/xtream/${code._id}`}
-                    className="group block rounded-xl border border-white/[0.06] bg-[#111118] p-4 sm:p-5 transition-all duration-200 hover:border-white/[0.12] hover:bg-[#1A1A24]"
+                    onClick={() => trackClick('xtream_card', code.title)}
+                    className="group block p-4 sm:p-5 linear-card"
                   >
                     {(code.category || code.expirationDate) && (
                       <div className="mb-3 flex flex-wrap items-center gap-2">
@@ -481,7 +594,8 @@ export default function HomePageClient({
                   <Link
                     key={portal._id}
                     href={`/mac-portal/${portal._id}`}
-                    className="group block rounded-xl border border-white/[0.06] bg-[#111118] p-4 sm:p-5 transition-all duration-200 hover:border-white/[0.12] hover:bg-[#1A1A24]"
+                    onClick={() => trackClick('mac_portal_card', portal.title)}
+                    className="group block p-4 sm:p-5 linear-card"
                   >
                     {portal.category && (
                       <span className="inline-flex rounded-md bg-amber-500/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-amber-400 mb-2">
@@ -534,7 +648,7 @@ export default function HomePageClient({
                 {appItems.map((app) => (
                   <article
                     key={app._id}
-                    className="rounded-xl border border-white/[0.06] bg-[#111118] p-4 sm:p-5 transition-all duration-200 hover:border-white/[0.12] hover:bg-[#1A1A24]"
+                    className="p-4 sm:p-5 linear-card"
                   >
                     <h4 className="text-sm sm:text-base font-medium text-[#E8E8ED] leading-snug">
                       {app.name}

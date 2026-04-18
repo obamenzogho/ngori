@@ -5,6 +5,7 @@ import HomePageClient, {
   type PublicAppItem,
   type XtreamItem,
 } from '@/app/components/home-page-client';
+import AnimatedBackground from '@/app/components/AnimatedBackground';
 import { connectDB } from '@/lib/mongodb';
 import AppItem from '@/lib/models/AppItem';
 import MacPortal from '@/lib/models/MacPortal';
@@ -84,5 +85,10 @@ async function getHomeContent() {
 export default async function HomePage() {
   const { content, error } = await getHomeContent();
 
-  return <HomePageClient initialContent={content} loadError={error} />;
+  return (
+    <>
+      <AnimatedBackground />
+      <HomePageClient initialContent={content} loadError={error} />
+    </>
+  );
 }

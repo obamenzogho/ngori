@@ -1,26 +1,26 @@
-@import "tailwindcss";
+@import "../node_modules/tailwindcss/index.css";
 
 :root {
-  /* ─── Linear-inspired Dark Palette ─── */
-  --background: #0A0A0F;
-  --background-surface: #111118;
-  --background-elevated: #1A1A24;
-  --foreground: #E8E8ED;
-  --foreground-secondary: #8B8B9E;
-  --foreground-muted: #5C5C72;
-  --primary: #5E6AD2;
-  --primary-hover: #7C6BF7;
-  --primary-subtle: rgba(94, 106, 210, 0.12);
-  --surface: #13131A;
-  --border: rgba(255, 255, 255, 0.06);
-  --border-hover: rgba(255, 255, 255, 0.12);
+  /* ─── Premium Deep Indigo/Violet Theme & Glassmorphism ─── */
+  --background: #030014;
+  --background-surface: rgba(17, 17, 24, 0.6);
+  --background-elevated: rgba(26, 26, 36, 0.8);
+  --foreground: #F8F8FF;
+  --foreground-secondary: #9BA1B6;
+  --foreground-muted: #646A82;
+  --primary: #8A2BE2;
+  --primary-hover: #9D4EDD;
+  --primary-subtle: rgba(138, 43, 226, 0.15);
+  --surface: rgba(25, 10, 45, 0.25);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(138, 43, 226, 0.35);
   --muted: #5C5C72;
-  --success: #4ADE80;
-  --success-subtle: rgba(74, 222, 128, 0.1);
-  --warning: #FBBF24;
-  --warning-subtle: rgba(251, 191, 36, 0.1);
-  --error: #F87171;
-  --error-subtle: rgba(248, 113, 113, 0.1);
+  --success: #00F0FF;
+  --success-subtle: rgba(0, 240, 255, 0.1);
+  --warning: #FF007F;
+  --warning-subtle: rgba(255, 0, 127, 0.1);
+  --error: #FF3333;
+  --error-subtle: rgba(255, 51, 51, 0.1);
   --font-geist-sans: var(--font-geist-sans);
   --font-geist-mono: var(--font-geist-mono);
 }
@@ -122,18 +122,47 @@ body {
   animation: fadeInScale 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ─── Linear-style Card ─── */
+/* ─── Premium Glassmorphism Card ─── */
 
 .linear-card {
   background: var(--surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  transition: border-color 0.2s ease, background-color 0.2s ease;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.linear-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.03) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-25deg);
+  transition: all 0.7s ease;
+  z-index: 0;
+}
+
+.linear-card:hover::before {
+  left: 200%;
 }
 
 .linear-card:hover {
   border-color: var(--border-hover);
   background: var(--background-elevated);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px 0 rgba(138, 43, 226, 0.15);
 }
 
 /* ─── Linear-style Badge ─── */
@@ -219,12 +248,18 @@ body {
 /* ─── Glow effect for logo ─── */
 
 .ngori-glow {
-  box-shadow: 0 0 20px rgba(94, 106, 210, 0.3), 0 0 60px rgba(94, 106, 210, 0.1);
+  box-shadow: 0 0 25px rgba(138, 43, 226, 0.5), 0 0 80px rgba(138, 43, 226, 0.2);
+  animation: pulse-glow 3s infinite alternate;
+}
+
+@keyframes pulse-glow {
+  0% { box-shadow: 0 0 25px rgba(138, 43, 226, 0.4), 0 0 80px rgba(138, 43, 226, 0.1); }
+  100% { box-shadow: 0 0 35px rgba(138, 43, 226, 0.7), 0 0 100px rgba(157, 78, 221, 0.3); }
 }
 
 /* ─── Dot grid background pattern ─── */
 
 .dot-grid {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 24px 24px;
+  background-image: radial-gradient(rgba(138, 43, 226, 0.1) 1px, transparent 1px);
+  background-size: 32px 32px;
 }

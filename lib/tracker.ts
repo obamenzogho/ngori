@@ -126,25 +126,13 @@ export function initScrollTracking(): void {
   });
 }
 
-// ─── Auto-tracking initialization ───
+export const trackAdBlockDetected = (): void => {
+  void track('ad_block_detected', { element: 'adblocker', label: 'detected' });
+};
 
+// ─── Compat alias (remplacé par usePathname dans AnalyticsTracker) ───
 export function initAnalytics(): void {
   if (typeof window === 'undefined') return;
-
-  // Track initial page view
   trackPageView();
   initScrollTracking();
-
-  // Track SPA navigation (Next.js App Router uses popstate + pushState)
-  let lastUrl = window.location.pathname;
-  const observer = new MutationObserver(() => {
-    if (window.location.pathname !== lastUrl) {
-      lastUrl = window.location.pathname;
-      maxScrollDepth = 0;
-      scrollTracked = false;
-      trackPageView();
-    }
-  });
-
-  observer.observe(document.body, { childList: true, subtree: true });
 }

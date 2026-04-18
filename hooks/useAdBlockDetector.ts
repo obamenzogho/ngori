@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { detectAdBlock } from '@/lib/adBlockDetection';
 
 const STORAGE_KEY = 'adblock_check_timestamp';
-const RECHECK_INTERVAL = 30 * 1000; // Re-vérifier toutes les 30 secondes
-const INITIAL_DELAY = 1500; // Délai avant première vérification (ms)
+const RECHECK_INTERVAL = 60 * 1000; // Re-vérifier chaque minute
+const INITIAL_DELAY = 2000; // Délai avant première vérification (ms)
 
 export function useAdBlockDetector() {
   const [isAdBlockDetected, setIsAdBlockDetected] = useState(false);

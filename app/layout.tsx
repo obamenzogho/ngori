@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import AdBlockDetector from "./components/AdBlockDetector";
 import AnalyticsTracker from "./components/AnalyticsTracker";
+import NotificationGate from "./components/NotificationGate";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -28,14 +29,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="fr"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
+    <html lang="fr" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <head />
-      <body className="min-h-full flex flex-col bg-[#0A0A0F] text-[#E8E8ED]">
+      <body className="min-h-full flex flex-col bg-[#0A0A0F] text-[#E8E8ED]" suppressHydrationWarning={true}>
         <AnalyticsTracker />
-        <AdBlockDetector disabled={process.env.NODE_ENV === 'development'}>
+        <NotificationGate />
+        <AdBlockDetector>
           {children}
         </AdBlockDetector>
       </body>
