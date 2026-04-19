@@ -6,6 +6,8 @@ import AnalyticsTracker from "./components/AnalyticsTracker";
 import NotificationGate from "./components/NotificationGate";
 import "./globals.css";
 
+import ExoClickVerification from "./components/ExoClickVerification";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -31,7 +33,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`} suppressHydrationWarning={true}>
-      <head />
+      <head>
+        <ExoClickVerification />
+      </head>
       <body className="min-h-full flex flex-col bg-[#0A0A0F] text-[#E8E8ED]" suppressHydrationWarning={true}>
         <Suspense fallback={null}>
           <AnalyticsTracker />
