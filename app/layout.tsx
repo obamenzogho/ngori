@@ -19,8 +19,39 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Ngori — Plateforme IPTV',
-  description: 'Partagez playlists M3U, accès Xtream, portails Mac et applications',
+  title: {
+    default: 'Ngori — Playlists M3U, Xtream & Portails Mac IPTV',
+    template: '%s | Ngori',
+  },
+  description:
+    'Découvrez gratuitement les meilleures playlists M3U, accès Xtream Codes, portails Mac et applications IPTV mis à jour régulièrement.',
+  keywords: [
+    'playlist m3u',
+    'xtream codes',
+    'mac portal',
+    'iptv gratuit',
+    'm3u 2026',
+    'xtream iptv',
+    'portail iptv mac',
+    'ngori',
+  ],
+  metadataBase: new URL('https://ngori-rho.vercel.app'),
+  openGraph: {
+    title: 'Ngori — Playlists M3U, Xtream & Portails Mac IPTV',
+    description:
+      'Découvrez gratuitement les meilleures playlists M3U, accès Xtream, portails Mac et applications IPTV.',
+    url: 'https://ngori-rho.vercel.app',
+    siteName: 'Ngori',
+    type: 'website',
+    images: [{ url: '/logo.png', width: 512, height: 512, alt: 'Ngori' }],
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Ngori — Plateforme IPTV Gratuite',
+    description:
+      'Playlists M3U, accès Xtream, portails Mac et applications IPTV mis à jour régulièrement.',
+    images: ['/logo.png'],
+  },
   icons: {
     icon: '/logo.png?v=3',
   },

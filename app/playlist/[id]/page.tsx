@@ -3,6 +3,7 @@ import Playlist from '@/lib/models/Playlist';
 import PlaylistDetailClient from '@/app/components/playlist-detail-client';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,6 +20,33 @@ function serializePlaylist(playlist: Awaited<ReturnType<typeof Playlist.findOne>
         ? playlist.updatedAt.toISOString()
         : playlist.updatedAt,
   };
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  try {
+    const { id } = await params;
+    await connectDB();
+    const playlist = await Playlist.findOne({ _id: id, isActive: true }).lean();
+    if (!playlist) return { title: 'Playlist introuvable' };
+    return {
+      title: `${playlist.title} — Playlist M3U`,
+      description:
+        playlist.description ||
+        `Téléchargez la playlist M3U "${playlist.title}" gratuitement sur Ngori.`,
+      openGraph: {
+        title: `${playlist.title} | Ngori`,
+        description:
+          playlist.description || `Playlist M3U disponible sur Ngori.`,
+        type: 'article',
+      },
+    };
+  } catch {
+    return { title: 'Playlist' };
+  }
 }
 
 export default async function PlaylistDetailPage({
