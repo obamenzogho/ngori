@@ -105,6 +105,20 @@ export default function AdScripts() {
         src="https://nap5k.com/tag.min.js"
         data-zone="10894762"
       />
+      {/* ── ExoClick Ad Provider ───────────────────────────────────── */}
+      <Script
+        id="exoclick-ad-provider"
+        strategy="afterInteractive"
+        src="https://a.magsrv.com/ad-provider.js"
+      />
+      <ins className="eas6a97888e10" data-zoneid="5905216"></ins>
+      <Script
+        id="exoclick-ad-serve"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: `(AdProvider = window.AdProvider || []).push({"serve": {}});`,
+        }}
+      />
     </>
   );
 }
