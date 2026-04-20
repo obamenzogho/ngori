@@ -26,6 +26,16 @@ const AppItemSchema = new Schema(
       default: 0,
     },
     fileSize: String,
+    packageId: {
+      type: String,
+      sparse: true,
+    },
+    lienMonetise: String,
+    source: {
+      type: String,
+      enum: ['manual', 'google_play', 'apkpure'],
+      default: 'manual',
+    },
   },
   {
     timestamps: true,

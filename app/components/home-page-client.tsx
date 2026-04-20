@@ -278,6 +278,39 @@ export default function HomePageClient({
     }
   }, [hasVisitedClient]);
 
+  const handleDownload = (e: React.MouseEvent<HTMLButtonElement>, app: PublicAppItem) => {
+    e.preventDefault();
+    trackClick('app_download', app.name);
+    
+    // Affiche le message
+    setNotice({
+      message: "Vous allez être redirigé vers la page de téléchargement...",
+      tone: 'success'
+    });
+    
+    // Récupère le lien monétisé s'il existe, sinon fallback URL
+    const targetUrl = (app as any).lienMonetise || app.downloadUrl;
+    
+    // Déclenchement Interstitiel Monetag (Zone 229945)
+    // On injecte le script spécifique à l'interstitiel pour qu'il s'exécute à ce moment précis
+    const scriptId = 'monetag-interstitial-229945';
+    if (!document.getElementById(scriptId)) {
+      const script = document.createElement('script');
+      script.id = scriptId;
+      script.src = "https://quge5.com/88/tag.min.js";
+      script.setAttribute('data-zone', '229945');
+      script.setAttribute('data-cfasync', 'false');
+      script.async = true;
+      document.body.appendChild(script);
+    }
+    
+    // Ouverture du lien de destination après un court délai pour laisser lire le message
+    setTimeout(() => {
+      window.open(targetUrl, '_blank', 'noopener,noreferrer');
+    }, 1200);
+  };
+
+
   const playlists = content.playlists;
   const xtreamCodes = content.xtreamCodes;
   const macPortals = content.macPortals;
@@ -660,12 +693,12 @@ export default function HomePageClient({
                       <p>Version: {app.version || '1.0.0'}</p>
                       {app.fileSize && <p>Taille: {app.fileSize}</p>}
                     </div>
-                    <a
-                      href={app.downloadUrl}
+                    <button
+                      onClick={(e) => handleDownload(e, app)}
                       className="mt-4 block w-full rounded-lg bg-[#5E6AD2] px-4 py-2.5 text-center text-sm font-medium text-white transition-all hover:bg-[#7C6BF7] active:scale-[0.98]"
                     >
                       Télécharger
-                    </a>
+                    </button>
                   </article>
                 ))}
               </div>

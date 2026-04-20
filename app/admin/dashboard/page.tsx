@@ -251,6 +251,11 @@ const TAB_CONFIG: Record<
         type: 'url',
       },
       {
+        name: 'packageId',
+        label: 'Package ID (facultatif, Google Play)',
+        placeholder: 'Ex: com.whatsapp',
+      },
+      {
         name: 'fileSize',
         label: 'Taille du fichier',
         placeholder: 'Ex: 48 MB',
@@ -320,6 +325,7 @@ const INITIAL_FORMS: Record<ContentType, FormDataState> = {
     isActive: true,
     name: '',
     version: '1.0.0',
+    packageId: '',
   },
 };
 
@@ -376,6 +382,8 @@ export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [visibilityLoadingId, setVisibilityLoadingId] = useState<string | null>(null);
+  const [fetchingPlay, setFetchingPlay] = useState(false);
+  const [fetchingCron, setFetchingCron] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -467,6 +475,61 @@ export default function AdminDashboard() {
   const resetForm = () => {
     setEditingId(null);
     setFormData(getInitialFormData(activeTab));
+  };
+
+  const handleFetchGooglePlay = async () => {
+    const pkgId = String(formData.packageId || '').trim();
+    if (!pkgId) {
+      setFeedback({ error: "Veuillez entrer un Package ID d'abord (champ ci-dessous).", success: '' });
+      return;
+    }
+    setFetchingPlay(true);
+    setFeedback({ error: '', success: '' });
+    try {
+      const res = await fetch('/api/admin/apps/fetch-from-play', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ packageId: pkgId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erreur Play Store');
+      
+      setFormData((prev) => ({
+        ...prev,
+        name: data.name || '',
+        description: data.description || '',
+        icon: data.icon || '',
+        version: data.version || '',
+        fileSize: data.fileSize || '',
+        category: data.category || '',
+        downloadUrl: data.downloadUrl || '',
+      }));
+      setFeedback({ error: '', success: 'Informations récupérées avec succès ! Vous pouvez vérifier et enregistrer.' });
+    } catch (error: any) {
+      setFeedback({ error: error.message, success: '' });
+    } finally {
+      setFetchingPlay(false);
+    }
+  };
+
+  const handleCronScrape = async () => {
+    setFetchingCron(true);
+    setFeedback({ error: '', success: '' });
+    try {
+      const res = await fetch('/api/cron/scrape-apkpure', {
+        headers: { 'Authorization': `Bearer ngori_cron_secret_2026_xK9mP3` }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erreur fetch scraping');
+      setFeedback({ 
+        error: '', 
+        success: data.success ? `Scraping terminé: ${data.added?.length} app(s) ajoutée(s). Veuillez rafraîchir la page.` : data.message 
+      });
+    } catch (error: any) {
+      setFeedback({ error: error.message, success: '' });
+    } finally {
+      setFetchingCron(false);
+    }
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -648,7 +711,8 @@ export default function AdminDashboard() {
     }
 
     if (activeTab === 'apps' && item.version) {
-      return `Version: ${item.version}`;
+      const src = (item as any).source ? `[${(item as any).source}] ` : '';
+      return `${src}Version: ${item.version}`;
     }
 
     if (activeTab === 'mac-portal' && item.portalUrl) {
@@ -869,6 +933,33 @@ export default function AdminDashboard() {
                     </button>
                   )}
                 </div>
+
+                {activeTab === 'apps' && (
+                  <div className="mb-6 rounded-lg border border-[#5E6AD2]/20 bg-[#5E6AD2]/5 p-4 flex flex-col md:flex-row items-center gap-4">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-[#8B93E6]">Ajout Magique (Google Play)</h3>
+                      <p className="text-xs text-[#5C5C72] mt-1">Saisissez un Package ID dans le formulaire et cliquez ici pour tout pré-remplir.</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={handleFetchGooglePlay}
+                        disabled={fetchingPlay}
+                        className="rounded-lg bg-[#5E6AD2] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#7C6BF7] disabled:opacity-50"
+                      >
+                         {fetchingPlay ? 'Recherche...' : 'Récupérer (Infos)'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleCronScrape}
+                        disabled={fetchingCron}
+                        className="rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 px-4 py-2 text-sm font-medium transition hover:bg-emerald-500/30 disabled:opacity-50"
+                      >
+                        {fetchingCron ? 'Scraping...' : 'Lancer Scraping (APKPure)'}
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
                   {config.fields.map((field) => {
