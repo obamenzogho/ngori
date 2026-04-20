@@ -25,11 +25,21 @@ export async function GET(request: Request) {
     const addedApps: string[] = [];
 
     try {
-      // Récupère le Top 15 des apps gratuites
-      // On utilise 'TOP_FREE' en dur car gplay.collection peut être instable selon l'import
+      // Liste de catégories variées pour le Play Store
+      const categories = [
+        'APPLICATION', 'GAME_ACTION', 'GAME_CASUAL', 'GAME_STRATEGY', 
+        'GAME_RACING', 'PRODUCTIVITY', 'PHOTOGRAPHY', 'SOCIAL', 
+        'COMMUNICATION', 'VIDEO_PLAYERS', 'ENTERTAINMENT', 'MUSIC_AND_AUDIO', 'TOOLS'
+      ];
+      
+      // On choisit une catégorie au hasard à chaque fois que le cron tourne 
+      // pour diversifier la bibliothèque sans exploser la limite de temps du serveur.
+      const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+
       const appsList: any[] = await gplay.list({
         collection: 'TOP_FREE',
-        num: 15,
+        category: randomCategory,
+        num: 40,
         lang: 'fr',
         country: 'fr',
       });
@@ -51,6 +61,7 @@ export async function GET(request: Request) {
             icon: appData.icon || '',
             version: appData.version || 'Dernière',
             rating: appData.scoreText || (appData.score !== undefined ? String(appData.score) : 'N/A'),
+            category: appData.genres ? appData.genres.join(', ') : 'Applications',
             packageId,
             downloadUrl,
             lienMonetise: monetizeLink(downloadUrl),

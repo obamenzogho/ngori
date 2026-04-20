@@ -178,6 +178,7 @@ export type PublicAppItem = BaseContentItem & {
   version?: string;
   icon?: string;
   rating?: string;
+  category?: string;
 };
 
 export type ContentResponse = {
@@ -683,8 +684,13 @@ export default function HomePageClient({
                 {appItems.map((app) => (
                   <article
                     key={app._id}
-                    className="p-4 sm:p-5 linear-card flex flex-col"
+                    className="p-4 sm:p-5 linear-card flex flex-col relative overflow-hidden"
                   >
+                    {app.category && (
+                      <span className="inline-flex rounded-md bg-[#5E6AD2]/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[#8B93E6] mb-3 w-max">
+                        {app.category.split(',')[0]}
+                      </span>
+                    )}
                     <div className="flex items-center gap-3">
                       {app.icon && (
                          <div className="flex-shrink-0">
