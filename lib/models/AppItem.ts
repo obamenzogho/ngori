@@ -16,6 +16,7 @@ const AppItemSchema = new Schema(
       required: true,
     },
     icon: String,
+    rating: String,
     category: String,
     isActive: {
       type: Boolean,

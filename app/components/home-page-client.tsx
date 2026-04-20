@@ -176,6 +176,8 @@ export type PublicAppItem = BaseContentItem & {
   fileSize?: string;
   name: string;
   version?: string;
+  icon?: string;
+  rating?: string;
 };
 
 export type ContentResponse = {
@@ -681,12 +683,30 @@ export default function HomePageClient({
                 {appItems.map((app) => (
                   <article
                     key={app._id}
-                    className="p-4 sm:p-5 linear-card"
+                    className="p-4 sm:p-5 linear-card flex flex-col"
                   >
-                    <h4 className="text-sm sm:text-base font-medium text-[#E8E8ED] leading-snug">
-                      {app.name}
-                    </h4>
-                    <p className="mt-1.5 text-xs sm:text-sm text-[#5C5C72] line-clamp-2">
+                    <div className="flex items-center gap-3">
+                      {app.icon && (
+                         <div className="flex-shrink-0">
+                           {/* eslint-disable-next-line @next/next/no-img-element */}
+                           <img src={app.icon} alt={app.name} className="w-12 h-12 rounded-lg object-cover" />
+                         </div>
+                      )}
+                      <div>
+                        <h4 className="text-sm sm:text-base font-medium text-[#E8E8ED] leading-snug">
+                          {app.name}
+                        </h4>
+                        {app.rating && app.rating !== 'N/A' && (
+                          <div className="flex items-center mt-0.5 text-xs text-[#d4a843]">
+                            <svg className="w-3.5 h-3.5 fill-current mr-1" viewBox="0 0 20 20">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            {app.rating}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <p className="mt-2 text-xs sm:text-sm text-[#5C5C72] line-clamp-2">
                       {app.description || 'Application disponible au téléchargement'}
                     </p>
                     <div className="mt-3 text-xs sm:text-sm text-[#5C5C72]">

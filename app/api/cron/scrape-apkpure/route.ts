@@ -61,6 +61,9 @@ export async function GET(request: Request) {
         // Version (souvent dans un span 'version' ou 'update')
         const version = elem.find('.version, .update-version').first().text().trim() || '1.0.0';
 
+        // Rating
+        const rating = elem.find('.rating, .score, .stars').first().text().trim() || 'N/A';
+
         // URL de téléchargement cible
         const downloadUrl = `https://apkpure.com${href}`;
 
@@ -74,6 +77,7 @@ export async function GET(request: Request) {
               description: `Application ${rawName} fraîchement récupérée depuis APKPure. (${version}).`,
               icon: iconUrl || 'https://via.placeholder.com/150',
               version: version,
+              rating: rating,
               packageId: packageId,
               downloadUrl: downloadUrl,
               lienMonetise: monetizeLink(downloadUrl),

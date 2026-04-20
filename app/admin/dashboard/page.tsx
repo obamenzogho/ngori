@@ -267,6 +267,11 @@ const TAB_CONFIG: Record<
         type: 'url',
       },
       {
+        name: 'rating',
+        label: 'Note / Evaluation',
+        placeholder: 'Ex: 4.5',
+      },
+      {
         name: 'category',
         label: 'Categorie',
         placeholder: 'Ex: Lecteur',
@@ -326,6 +331,7 @@ const INITIAL_FORMS: Record<ContentType, FormDataState> = {
     name: '',
     version: '1.0.0',
     packageId: '',
+    rating: '',
   },
 };
 
@@ -499,6 +505,7 @@ export default function AdminDashboard() {
         name: data.name || '',
         description: data.description || '',
         icon: data.icon || '',
+        rating: data.rating || '',
         version: data.version || '',
         fileSize: data.fileSize || '',
         category: data.category || '',

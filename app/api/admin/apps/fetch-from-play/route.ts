@@ -28,6 +28,7 @@ export async function POST(request: Request) {
       name: appData.title,
       description: appData.summary || appData.description?.substring(0, 150) + '...',
       icon: appData.icon,
+      rating: appData.scoreText || (appData.score ? String(appData.score) : undefined),
       version: appData.version || '1.0.0',
       fileSize: appData.size || 'Inconnue',
       category: appData.genre || 'Applications',
