@@ -22,85 +22,58 @@ export async function GET(request: Request) {
     await connectDB();
     const addedApps = [];
 
-    // 1. Scraping APKPure avec axios et cheerio
+    // Puisque APKPure utilise un pare-feu Cloudflare (Anti-bot) sévère qui bloque Axios/Fetch en serveur,
+    // Nous utilisons la méthode 100% fiable : Lister les nouveautés via google-play-scraper
+    // et recréer les liens de téléchargement APKPure.
     try {
-      const response = await axios.get('https://apkpure.com/fr/app-update', {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-          'Accept-Language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
-        },
-        timeout: 15000,
+      const gplay = require('google-play-scraper');
+      
+      // On tire les 15 applications populaires/nouvelles aléatoirement ou selon une catégorie
+      const appsList = await gplay.list({
+        collection: gplay.collection.TOP_FREE,
+        num: 15,
+        lang: 'fr',
+        country: 'fr'
       });
 
-      const $ = cheerio.load(response.data);
-
-      // On parcourt les éléments de la liste des mises à jour récentes
-      // APKPure utilise souvent des classes comme "title", "img img-error", etc.
-      const appCards = $('.app-info, .title, .box-item').toArray(); 
-
-      for (let i = 0; i < Math.min(appCards.length, 10); i++) {
-        const elem = $(appCards[i]);
+      for (const appData of appsList) {
+        if (!appData.appId) continue;
         
-        // Extraction par des selecteurs génériques qu'on retrouve sur le site
-        const nameNode = elem.find('.title, a.title, h3, .app-title').first();
-        const rawName = nameNode.text().trim();
-        if (!rawName) continue;
-
-        const href = nameNode.attr('href') || elem.find('a').first().attr('href') || '';
-        if (!href.includes('/')) continue;
+        const packageId = appData.appId;
         
-        // Ex: /fr/whatsapp-messenger/com.whatsapp
-        const urlParts = href.split('/');
-        const packageId = href.includes('.html') ? null : urlParts[urlParts.length - 1];
+        // Vérifie si l'app existe déjà
+        const exists = await AppItem.findOne({ packageId });
         
-        // Image logo
-        let iconUrl = elem.find('img').first().attr('src') || elem.find('img').first().attr('data-src');
-        if (iconUrl && iconUrl.startsWith('/')) iconUrl = `https://apkpure.com${iconUrl}`;
-
-        // Version (souvent dans un span 'version' ou 'update')
-        const version = elem.find('.version, .update-version').first().text().trim() || '1.0.0';
-
-        // Rating
-        const rating = elem.find('.rating, .score, .stars').first().text().trim() || 'N/A';
-
-        // URL de téléchargement cible
-        const downloadUrl = `https://apkpure.com${href}`;
-
-        if (packageId && rawName) {
-          // Vérifie si le package existe déjà pour éviter les doublons
-          const exists = await AppItem.findOne({ packageId });
+        if (!exists) {
+          // On peut utiliser la "search" URL ou construire une URL directe (difficile sans le titre exact côté APKPure)
+          const downloadUrl = `https://apkpure.com/fr/search?q=${encodeURIComponent(packageId)}`;
           
-          if (!exists) {
-            const newApp = await AppItem.create({
-              name: rawName,
-              description: `Application ${rawName} fraîchement récupérée depuis APKPure. (${version}).`,
-              icon: iconUrl || 'https://via.placeholder.com/150',
-              version: version,
-              rating: rating,
-              packageId: packageId,
-              downloadUrl: downloadUrl,
-              lienMonetise: monetizeLink(downloadUrl),
-              source: 'apkpure',
-              isActive: true,
-            });
-            addedApps.push(newApp.name);
-          }
+          const newApp = await AppItem.create({
+            name: appData.title,
+            description: appData.summary || `Application ${appData.title} importée automatiquement.`,
+            icon: appData.icon || 'https://via.placeholder.com/150',
+            version: 'Dernière', // gplay.list ne donne souvent pas la version exacte, on met 'Dernière'
+            rating: appData.scoreText || 'N/A',
+            packageId: packageId,
+            downloadUrl: downloadUrl,
+            lienMonetise: monetizeLink(downloadUrl),
+            source: 'google_play', // ou apkpure
+            isActive: true,
+          });
+          addedApps.push(newApp.name);
         }
       }
 
-      console.log(`[Cron APKPure] Scraping terminé, ${addedApps.length} apps ajoutées.`);
+      console.log(`[Cron Apps] Importation terminée, ${addedApps.length} apps ajoutées.`);
       return NextResponse.json({ success: true, added: addedApps });
 
-    } catch (parseError: any) {
-      console.warn('[Cron APKPure] Erreur Axios/Scraping :', parseError.message);
-      // Fallback: si APKPure bloque le bot (ce qui est très fréquent),
-      // nous ne voulons pas planter l'API. On renvoie un succès partiel.
+    } catch (apiError: any) {
+      console.error('[Cron Apps] Erreur Scraper :', apiError.message);
       return NextResponse.json({ 
         success: false, 
-        message: 'Blocage Anti-bot APKPure (Cloudflare) ou erreur réseau.', 
-        error: parseError.message 
-      }, { status: 200 }); // Status 200 pour le cron job
+        message: 'Erreur lors de la récupération des données.', 
+        error: apiError.message 
+      }, { status: 500 });
     }
 
   } catch (error) {
