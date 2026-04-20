@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
+import gplay from 'google-play-scraper';
 import { monetizeLink } from '@/lib/linkvertise';
 
 export async function POST(request: Request) {
@@ -14,10 +15,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Package ID manquant' }, { status: 400 });
     }
 
-    // Récupère les détails de l'app sur le Play Store français via import dynamique
-    const gplayModule = await import('google-play-scraper');
-    const gplay = (gplayModule as any).default ?? gplayModule;
-    
+    // Récupère les détails de l'app sur le Play Store français
     const appData = await gplay.app({ appId: packageId, lang: 'fr', country: 'fr' });
 
     // Construit un lien vers une recherche APK pure en guise de fallback de "téléchargement apk"

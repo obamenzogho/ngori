@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import AppItem from '@/lib/models/AppItem';
 import { monetizeLink } from '@/lib/linkvertise';
+import gplay from 'google-play-scraper';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -19,15 +20,10 @@ export async function GET(request: Request) {
     await connectDB();
     const addedApps: string[] = [];
 
-    // google-play-scraper est un module ES — on utilise l'import dynamique
     try {
-      const gplayModule = await import('google-play-scraper');
-      // Selon la version, le module peut être dans .default ou directement
-      const gplay = (gplayModule as any).default ?? gplayModule;
-
       // Récupère le Top 15 des apps gratuites
       const appsList: any[] = await gplay.list({
-        collection: 'topselling_free',
+        collection: gplay.collection.TOP_FREE,
         num: 15,
         lang: 'fr',
         country: 'fr',
