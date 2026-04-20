@@ -2,23 +2,23 @@
 
 :root {
   /* ─── Premium Deep Indigo/Violet Theme & Glassmorphism ─── */
-  --background: #030014;
-  --background-surface: rgba(17, 17, 24, 0.6);
-  --background-elevated: rgba(26, 26, 36, 0.8);
+  --background: #0F0F1A;
+  --background-surface: rgba(15, 15, 26, 0.6);
+  --background-elevated: rgba(22, 22, 38, 0.8);
   --foreground: #F8F8FF;
-  --foreground-secondary: #9BA1B6;
+  --foreground-secondary: #A0A5B5;
   --foreground-muted: #646A82;
-  --primary: #8A2BE2;
-  --primary-hover: #9D4EDD;
-  --primary-subtle: rgba(138, 43, 226, 0.15);
-  --surface: rgba(25, 10, 45, 0.25);
+  --primary: #6C63FF;
+  --primary-hover: #5A52D9;
+  --primary-subtle: rgba(108, 99, 255, 0.15);
+  --surface: rgba(108, 99, 255, 0.05);
   --border: rgba(255, 255, 255, 0.08);
-  --border-hover: rgba(138, 43, 226, 0.35);
+  --border-hover: rgba(108, 99, 255, 0.35);
   --muted: #5C5C72;
-  --success: #00F0FF;
-  --success-subtle: rgba(0, 240, 255, 0.1);
-  --warning: #FF007F;
-  --warning-subtle: rgba(255, 0, 127, 0.1);
+  --success: #00D4AA;
+  --success-subtle: rgba(0, 212, 170, 0.1);
+  --warning: #FFAD00;
+  --warning-subtle: rgba(255, 173, 0, 0.1);
   --error: #FF3333;
   --error-subtle: rgba(255, 51, 51, 0.1);
   --font-geist-sans: var(--font-geist-sans);

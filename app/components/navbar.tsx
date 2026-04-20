@@ -1,130 +1,147 @@
-'use client';
+"use client";
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { usePathname } from 'next/navigation';
+import { Menu, X, Search, Sun, Moon } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import { cn } from '@/lib/utils';
+import { useSearch } from '@/app/context/SearchContext';
+import { useRouter } from 'next/navigation';
 
-import { IconMenu, IconX, IconNewspaper, IconMusic, IconRadio, IconMonitor, IconSmartphone } from './icons';
-
-export type ContentView = 'all' | 'playlists' | 'xtreamCodes' | 'macPortals' | 'appItems';
-
-interface NavItem {
-  id: ContentView;
-  label: string;
-  icon: React.ReactNode;
-}
-
-const NAV_ITEMS: NavItem[] = [
-  { id: 'all', label: 'Actualités', icon: <IconNewspaper size={15} /> },
-  { id: 'playlists', label: 'M3U', icon: <IconMusic size={15} /> },
-  { id: 'xtreamCodes', label: 'Xtream', icon: <IconRadio size={15} /> },
-  { id: 'macPortals', label: 'Mac Portal', icon: <IconMonitor size={15} /> },
-  { id: 'appItems', label: 'Apps', icon: <IconSmartphone size={15} /> },
-];
-
-interface NavbarProps {
-  activeView: ContentView;
-  onViewChange: (view: ContentView) => void;
-}
-
-export default function Navbar({ activeView, onViewChange }: NavbarProps) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  const goToView = useCallback((view: ContentView) => {
-    onViewChange(view);
-    setMobileMenuOpen(false);
-    setTimeout(() => {
-      document.getElementById('content-zone')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 50);
-  }, [onViewChange]);
+export default function Navbar() {
+  const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const { searchQuery, setSearchQuery } = useSearch();
 
   useEffect(() => {
-    if (!mobileMenuOpen) return;
-
-    function handleClickOutside(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMobileMenuOpen(false);
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [mobileMenuOpen]);
-
-  useEffect(() => {
-    function handleResize() {
-      if (window.innerWidth >= 768) {
-        setMobileMenuOpen(false);
-      }
-    }
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    setMounted(true);
   }, []);
 
+  const navLinks = [
+    { name: 'Accueil', href: '/' },
+    { name: 'Playlists M3U', href: '/#m3u' },
+    { name: 'Xtream', href: '/#xtream' },
+    { name: 'Mac Portal', href: '/#mac-portal' },
+    { name: 'Applications', href: '/#apps' },
+    { name: 'À propos', href: '/about' },
+  ];
+
   return (
-    <header className="sticky top-0 z-50 bg-[#0A0A0F]/80 backdrop-blur-xl border-b border-white/[0.06]">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-14 items-center justify-between">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 group">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png?v=3" alt="Ngori" className="h-14 w-auto transition-transform group-hover:scale-105" />
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md">
+      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+        {/* LOGO */}
+        <Link href="/" className="flex items-center gap-2 group">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png?v=3" alt="Ngori" className="h-[40px] w-auto transition-transform group-hover:scale-105" />
+          <span className="hidden sm:block text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-success">
+            Ngori
+          </span>
+        </Link>
+
+        {/* DESKTOP NAV */}
+        <nav className="hidden md:flex items-center gap-6">
+          {navLinks.map((link) => (
+            <Link
+              key={link.name}
+              href={link.href}
+              className={cn(
+                "text-sm font-medium transition-colors hover:text-primary",
+                pathname === link.href ? "text-primary" : "text-foreground-secondary"
+              )}
+            >
+              {link.name}
+            </Link>
+          ))}
+        </nav>
+
+        {/* ACTIONS */}
+        <div className="flex items-center gap-4">
+          <div className="hidden sm:block relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-foreground-muted" />
+            <input
+              type="search"
+              placeholder="Rechercher..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                if (pathname !== '/' && e.target.value.length > 0) {
+                  router.push('/#content-zone');
+                }
+              }}
+              className="linear-input pl-9 w-48 lg:w-64 h-9"
+            />
+          </div>
+          
+          {mounted && (
+            <button
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="p-2 rounded-full hover:bg-surface text-foreground-secondary transition-colors"
+              aria-label="Toggle theme"
+            >
+              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+          )}
+
+          <Link href="/admin/login" className="hidden md:flex linear-btn linear-btn-primary h-9">
+            Connexion
           </Link>
 
-          {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-0.5">
-            {NAV_ITEMS.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => goToView(item.id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[13px] font-medium transition-all duration-150 ${
-                  activeView === item.id
-                    ? 'bg-white/[0.08] text-white'
-                    : 'text-[#8B8B9E] hover:text-[#E8E8ED] hover:bg-white/[0.04]'
-                }`}
-              >
-                {item.icon}
-                {item.label}
-              </button>
-            ))}
-          </nav>
-
-          {/* Mobile hamburger */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 -mr-2 rounded-md hover:bg-white/[0.04] transition-colors text-[#8B8B9E]"
-            aria-label={mobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+          {/* MOBILE TOGGLE */}
+          <button 
+            className="md:hidden p-2 text-foreground"
+            onClick={() => setIsOpen(!isOpen)}
           >
-            {mobileMenuOpen ? <IconX size={20} /> : <IconMenu size={20} />}
+            {isOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
       </div>
 
-      {/* Mobile dropdown menu */}
-      <div
-        ref={menuRef}
-        className={`md:hidden overflow-hidden transition-all duration-200 ease-in-out ${
-          mobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-        }`}
-      >
-        <nav className="px-4 pb-4 pt-2 space-y-0.5 border-t border-white/[0.06] bg-[#0A0A0F]/95 backdrop-blur-xl">
-          {NAV_ITEMS.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => goToView(item.id)}
-              className={`w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-all duration-150 ${
-                activeView === item.id
-                  ? 'bg-white/[0.08] text-white'
-                  : 'text-[#8B8B9E] hover:text-[#E8E8ED] hover:bg-white/[0.04]'
-              }`}
+      {/* MOBILE MENU */}
+      {isOpen && (
+        <div className="md:hidden border-t border-border bg-background absolute w-full animate-fade-in pb-4">
+          <div className="container px-4 py-4 flex flex-col gap-4">
+            <div className="relative mb-2">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-foreground-muted" />
+              <input
+                type="search"
+                placeholder="Rechercher..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  if (pathname !== '/' && e.target.value.length > 0) {
+                    router.push('/#content-zone');
+                  }
+                }}
+                className="linear-input pl-9 w-full h-10"
+              />
+            </div>
+            {navLinks.map((link) => (
+              <Link
+                key={link.name}
+                href={link.href}
+                className={cn(
+                  "text-base font-medium py-2 border-b border-border/20",
+                  pathname === link.href ? "text-primary" : "text-foreground-secondary"
+                )}
+                onClick={() => setIsOpen(false)}
+              >
+                {link.name}
+              </Link>
+            ))}
+            <Link 
+              href="/admin/login" 
+              className="linear-btn linear-btn-primary mt-2 flex justify-center py-2"
+              onClick={() => setIsOpen(false)}
             >
-              {item.icon}
-              {item.label}
-            </button>
-          ))}
-        </nav>
-      </div>
+              Connexion
+            </Link>
+          </div>
+        </div>
+      )}
     </header>
   );
 }

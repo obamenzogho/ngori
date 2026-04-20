@@ -45,6 +45,9 @@ export async function generateMetadata({
         description: xtream.description || 'Accès Xtream disponible sur Ngori.',
         type: 'article',
       },
+      alternates: {
+        canonical: `/xtream/${id}`,
+      },
     };
   } catch {
     return { title: 'Xtream' };

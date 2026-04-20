@@ -1,28 +1,50 @@
-'use client';
+"use client";
 
-import AdBanner from './ad-banner';
-import AdScripts from './ad-scripts';
+import Link from 'next/link';
 
 export default function Footer() {
   return (
-    <>
-      <AdScripts />
-
-      <footer className="mt-auto border-t border-white/[0.06] bg-[#0A0A0F]">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-          <AdBanner variant="adsterra-footer" />
-
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-3">
+    <footer className="w-full border-t border-border bg-background-elevated mt-auto">
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* BRAND */}
+          <div className="flex flex-col gap-4">
+            <Link href="/" className="flex items-center gap-2 group">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.png?v=3" alt="Ngori" className="h-8 w-auto" />
-            </div>
-            <p className="text-xs text-[#5C5C72]">
-              &copy; {new Date().getFullYear()} Ngori — Partager et découvrir du contenu
+              <img src="/logo.png?v=3" alt="Ngori" className="h-10 w-auto transition-transform group-hover:scale-105" />
+              <span className="text-xl font-bold text-foreground">Ngori</span>
+            </Link>
+            <p className="text-sm text-foreground-secondary">
+              Accédez aux meilleures playlists M3U, connexions Xtream, 
+              portails Mac et applications mobiles, centralisés en un seul endroit.
             </p>
           </div>
+
+          {/* QUICK LINKS */}
+          <div className="flex flex-col gap-2">
+            <h3 className="font-semibold text-foreground mb-2">Liens Rapides</h3>
+            <Link href="/#m3u" className="text-sm text-foreground-secondary hover:text-primary transition-colors">Playlists M3U</Link>
+            <Link href="/#xtream" className="text-sm text-foreground-secondary hover:text-primary transition-colors">Xtream Codes</Link>
+            <Link href="/#mac-portal" className="text-sm text-foreground-secondary hover:text-primary transition-colors">Portails Mac</Link>
+            <Link href="/#apps" className="text-sm text-foreground-secondary hover:text-primary transition-colors">Applications</Link>
+          </div>
+
+          {/* LEGAL */}
+          <div className="flex flex-col gap-2">
+            <h3 className="font-semibold text-foreground mb-2">Légal & Contact</h3>
+            <Link href="/about" className="text-sm text-foreground-secondary hover:text-primary transition-colors">À propos</Link>
+            <Link href="/contact" className="text-sm text-foreground-secondary hover:text-primary transition-colors">Contactez-nous</Link>
+            <Link href="/terms" className="text-sm text-foreground-secondary hover:text-primary transition-colors">CGU</Link>
+            <Link href="/privacy" className="text-sm text-foreground-secondary hover:text-primary transition-colors">Politique de confidentialité</Link>
+          </div>
         </div>
-      </footer>
-    </>
+
+        <div className="border-t border-border mt-10 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-xs text-foreground-muted">
+            © {new Date().getFullYear()} Ngori. Tous droits réservés.
+          </p>
+        </div>
+      </div>
+    </footer>
   );
 }

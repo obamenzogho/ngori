@@ -41,6 +41,9 @@ export async function generateMetadata({
         description: portal.description || 'Portail Mac disponible sur Ngori.',
         type: 'article',
       },
+      alternates: {
+        canonical: `/mac-portal/${id}`,
+      },
     };
   } catch {
     return { title: 'Mac Portal' };
