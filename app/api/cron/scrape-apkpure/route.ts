@@ -28,9 +28,10 @@ export async function GET(request: Request) {
     try {
       const gplay = require('google-play-scraper');
       
-      // On tire les 15 applications populaires/nouvelles aléatoirement ou selon une catégorie
+      // On tire les 15 applications populaires/nouvelles
+      // On utilise la valeur string directe car gplay.collection peut être undefined selon la version
       const appsList = await gplay.list({
-        collection: gplay.collection.TOP_FREE,
+        collection: 'topselling_free',
         num: 15,
         lang: 'fr',
         country: 'fr'
