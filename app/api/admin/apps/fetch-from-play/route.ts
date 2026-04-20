@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
-import gplay from 'google-play-scraper';
 import { monetizeLink } from '@/lib/linkvertise';
+
+// google-play-scraper est souvent problématique à importer en ESM/Next.js
+const gplayModule = require('google-play-scraper');
+const gplay = gplayModule.default || gplayModule;
 
 export async function POST(request: Request) {
   try {
@@ -28,7 +31,7 @@ export async function POST(request: Request) {
       name: appData.title,
       description: appData.summary || appData.description?.substring(0, 150) + '...',
       icon: appData.icon,
-      rating: appData.scoreText || (appData.score ? String(appData.score) : undefined),
+      rating: appData.scoreText || (appData.score !== undefined ? String(appData.score) : 'N/A'),
       version: appData.version || '1.0.0',
       fileSize: appData.size || 'Inconnue',
       category: appData.genre || 'Applications',

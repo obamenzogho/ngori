@@ -2,7 +2,11 @@ import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import AppItem from '@/lib/models/AppItem';
 import { monetizeLink } from '@/lib/linkvertise';
-import gplay from 'google-play-scraper';
+
+// google-play-scraper est souvent problématique à importer en ESM/Next.js
+// On utilise require pour une compatibilité maximale en environnement Node.js
+const gplayModule = require('google-play-scraper');
+const gplay = gplayModule.default || gplayModule;
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -22,8 +26,9 @@ export async function GET(request: Request) {
 
     try {
       // Récupère le Top 15 des apps gratuites
+      // On utilise 'TOP_FREE' en dur car gplay.collection peut être instable selon l'import
       const appsList: any[] = await gplay.list({
-        collection: gplay.collection.TOP_FREE,
+        collection: 'TOP_FREE',
         num: 15,
         lang: 'fr',
         country: 'fr',
@@ -45,7 +50,7 @@ export async function GET(request: Request) {
             description: appData.summary || `Application ${appData.title} importée automatiquement.`,
             icon: appData.icon || '',
             version: appData.version || 'Dernière',
-            rating: appData.scoreText || (appData.score ? String(appData.score) : undefined),
+            rating: appData.scoreText || (appData.score !== undefined ? String(appData.score) : 'N/A'),
             packageId,
             downloadUrl,
             lienMonetise: monetizeLink(downloadUrl),
