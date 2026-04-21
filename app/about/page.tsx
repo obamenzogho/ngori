@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { ChevronDown, Target, Users, ShieldCheck, HelpCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import Breadcrumbs from './components/ui/Breadcrumbs';
+import Breadcrumbs from '@/app/components/ui/Breadcrumbs';
 
 const FAQ_ITEMS = [
   {

@@ -28,7 +28,7 @@ export function normalizeName(name: string, dateStr?: string, channelCount?: num
         // ignore date format error
       }
     }
-    return \`\${name}\${suffix}\`;
+    return `${name}${suffix}`;
   }
   return name;
 }

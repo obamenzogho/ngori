@@ -81,7 +81,9 @@ export default function RootLayout({
           </Suspense>
           <NotificationGate />
           
-          <Navbar />
+          <Suspense fallback={<div className="h-20" />}>
+            <Navbar />
+          </Suspense>
           
           <main className="flex-grow flex flex-col w-full relative z-10">
             <AdBlockDetector>

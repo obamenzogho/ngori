@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Copy, Download, Calendar, Activity, CheckCircle2, XCircle, ArrowLeft } from 'lucide-react';
+import { Copy, Download, Calendar, Activity, CheckCircle2, XCircle, ArrowLeft, Music } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import Breadcrumbs from './ui/Breadcrumbs';
 import { formatRelativeDate } from '@/lib/formatters';

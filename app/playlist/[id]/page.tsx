@@ -32,7 +32,6 @@ export async function generateMetadata({
     await connectDB();
     const playlist = await Playlist.findOne({ _id: id, isActive: true }).lean();
     if (!playlist) return { title: 'Playlist introuvable' };
-    if (!playlist) return { title: 'Playlist introuvable', alternates: { canonical: `/playlist/${id}` } };
     return {
       title: `${playlist.title} — Playlist M3U`,
       description:

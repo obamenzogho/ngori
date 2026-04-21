@@ -53,6 +53,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     }));
 
+    const portalRoutes: MetadataRoute.Sitemap = macPortals.map((m) => ({
+      url: `${BASE_URL}/mac-portal/${m._id}`,
+      lastModified: m.updatedAt instanceof Date ? m.updatedAt : new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    }));
+
     const appRoutes: MetadataRoute.Sitemap = apps.map((a) => ({
       url: `${BASE_URL}/app/${a._id}`,
       lastModified: a.updatedAt instanceof Date ? a.updatedAt : new Date(),

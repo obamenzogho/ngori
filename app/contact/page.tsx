@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Send, Mail, User, MessageSquare, SendHorizontal, MessageCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
-import Breadcrumbs from './components/ui/Breadcrumbs';
+import Breadcrumbs from '@/app/components/ui/Breadcrumbs';
 
 export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);

@@ -78,7 +78,7 @@ export default function MacPortalDetailClient({ portal }: { portal: MacPortalDet
                   <span className="text-sm font-mono text-foreground">{portal.macAddress}</span>
                 </div>
                 <button 
-                  onClick={() => handleCopy(portal.macAddress, 'Adresse MAC')}
+                  onClick={() => handleCopy(portal.macAddress || '', 'Adresse MAC')}
                   className="p-3 bg-surface hover:bg-background-elevated border border-border rounded-xl transition-all"
                   title="Copier MAC"
                 >
