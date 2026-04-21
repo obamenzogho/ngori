@@ -60,21 +60,19 @@ export default function Navbar() {
 
         {/* ACTIONS */}
         <div className="flex items-center gap-4">
-          <div className="hidden sm:block relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-foreground-muted" />
-            <input
-              type="search"
-              placeholder="Rechercher..."
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                if (pathname !== '/' && e.target.value.length > 0) {
-                  router.push('/#content-zone');
-                }
-              }}
-              className="linear-input pl-9 w-48 lg:w-64 h-9"
-            />
-          </div>
+          <button
+            onClick={() => {
+              if (pathname === '/') {
+                document.getElementById('content-zone')?.scrollIntoView({ behavior: 'smooth' });
+              } else {
+                router.push('/#content-zone');
+              }
+            }}
+            className="p-2 rounded-full hover:bg-surface text-foreground-secondary transition-colors"
+            aria-label="Rechercher"
+          >
+            <Search size={20} />
+          </button>
           
           {mounted && (
             <button
@@ -85,10 +83,6 @@ export default function Navbar() {
               {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
             </button>
           )}
-
-          <Link href="/admin/login" className="hidden md:flex linear-btn linear-btn-primary h-9">
-            Connexion
-          </Link>
 
           {/* MOBILE TOGGLE */}
           <button 
@@ -105,7 +99,9 @@ export default function Navbar() {
         <div className="md:hidden border-t border-border bg-background absolute w-full animate-fade-in pb-4">
           <div className="container px-4 py-4 flex flex-col gap-4">
             <div className="relative mb-2">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-foreground-muted" />
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted pointer-events-none">
+                <Search className="h-4 w-4" />
+              </span>
               <input
                 type="search"
                 placeholder="Rechercher..."
@@ -116,7 +112,7 @@ export default function Navbar() {
                     router.push('/#content-zone');
                   }
                 }}
-                className="linear-input pl-9 w-full h-10"
+                className="linear-input pl-10 w-full h-10"
               />
             </div>
             {navLinks.map((link) => (
@@ -132,13 +128,6 @@ export default function Navbar() {
                 {link.name}
               </Link>
             ))}
-            <Link 
-              href="/admin/login" 
-              className="linear-btn linear-btn-primary mt-2 flex justify-center py-2"
-              onClick={() => setIsOpen(false)}
-            >
-              Connexion
-            </Link>
           </div>
         </div>
       )}

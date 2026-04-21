@@ -19,10 +19,9 @@ const AnimatedCounter = ({ value }: { value: number }) => {
   const isInView = useInView(ref, { once: true });
 
   useEffect(() => {
-    if (isInView) {
+    if (isInView && value > 0) {
       let start = 0;
       const end = value;
-      if (start === end) return;
       
       const duration = 2000;
       let startTime = performance.now();
@@ -38,6 +37,8 @@ const AnimatedCounter = ({ value }: { value: number }) => {
       };
       
       requestAnimationFrame(updateCounter);
+    } else if (value === 0) {
+      setCurrentValue(0);
     }
   }, [value, isInView]);
 

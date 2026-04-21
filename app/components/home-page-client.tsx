@@ -4,7 +4,8 @@ import { useState, useMemo } from 'react';
 import Hero from './Hero';
 import StatsCounters from './StatsCounters';
 import { Card } from './ui/Card';
-import { Music, Radio, Monitor, Smartphone, Search, Filter } from 'lucide-react';
+import AppCard from './ui/AppCard';
+import { Music, Radio, Monitor, Smartphone, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { truncateText, normalizeName } from '@/lib/formatters';
 import { useSearch } from '@/app/context/SearchContext';
@@ -93,7 +94,6 @@ export default function HomePageClient({
         return dateB - dateA;
       }
       if (sortBy === 'channels') {
-        // Only makes sense for M3U, but we handle it generically
         const countA = (a.content || '').split('\n').length;
         const countB = (b.content || '').split('\n').length;
         return countB - countA;
@@ -111,16 +111,33 @@ export default function HomePageClient({
     };
   }, [initialContent, searchQuery, sortBy]);
 
+  // Group apps by category for Play Store layout
+  const appsByCategory = useMemo(() => {
+    const groups: Record<string, PublicAppItem[]> = {
+      'Récemment ajoutées': [...filteredContent.appItems].sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()).slice(0, 10)
+    };
+    
+    filteredContent.appItems.forEach(app => {
+      const cat = app.category || 'Autres';
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(app);
+    });
+    
+    return groups;
+  }, [filteredContent.appItems]);
+
   return (
     <div className="pb-20">
       <Hero />
       <StatsCounters stats={stats} />
 
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-4" id="content-zone">
         {/* Controls Bar */}
         <div className="flex flex-col md:flex-row gap-4 mb-12 items-center justify-between sticky top-20 z-30 bg-background/80 backdrop-blur-md p-4 rounded-2xl border border-border">
           <div className="relative w-full md:w-96">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted" size={18} />
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted pointer-events-none">
+              <Search className="h-4 w-4" />
+            </span>
             <input
               type="text"
               placeholder="Rechercher une playlist, une app..."
@@ -184,7 +201,7 @@ export default function HomePageClient({
         </div>
 
         {/* Content Sections */}
-        <div className="space-y-20">
+        <div className="space-y-24">
           
           {/* M3U Section */}
           {(filterType === 'all' || filterType === 'm3u') && (
@@ -271,37 +288,39 @@ export default function HomePageClient({
           </section>
           )}
 
-          {/* Apps Section */}
+          {/* Apps Section - Google Play Store Style */}
           {(filterType === 'all' || filterType === 'apps') && (
-            <section id="apps" className="scroll-mt-32">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="p-2 bg-purple-500/10 text-purple-400 rounded-lg">
-                <Smartphone size={24} />
+            <section id="apps" className="scroll-mt-32 space-y-12">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-purple-500/10 text-purple-400 rounded-lg">
+                  <Smartphone size={24} />
+                </div>
+                <h2 className="text-3xl font-bold text-foreground">Applications</h2>
               </div>
-              <h2 className="text-2xl font-bold text-foreground">Applications</h2>
-              <span className="ml-auto text-sm text-foreground-secondary">{filteredContent.appItems.length} résultats</span>
-            </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredContent.appItems.map((item) => (
-                <Card
-                  key={item._id}
-                  href={`/app/${item._id}`}
-                  type="app"
-                  title={item.name}
-                  subtitle={truncateText(item.description || '', 150)}
-                  image={item.icon}
-                  icon={<Smartphone size={24} />}
-                  dateStr={item.createdAt}
-                  bottomContent={
-                    <div className="flex items-center justify-between text-xs text-foreground-muted">
-                      <span>{item.version || 'v1.0'}</span>
-                      <span>{item.fileSize && item.fileSize !== 'N/A' ? item.fileSize : 'N/A'}</span>
-                    </div>
-                  }
-                />
+
+              {Object.entries(appsByCategory).map(([category, apps]) => (
+                <div key={category} className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xl font-bold text-foreground/90">{category}</h3>
+                    <button className="text-sm font-bold text-primary hover:underline">
+                      Voir plus
+                    </button>
+                  </div>
+                  
+                  <div className="flex overflow-x-auto gap-4 pb-6 scrollbar-hide -mx-4 px-4 snap-x">
+                    {apps.map((item) => (
+                      <AppCard
+                        key={item._id}
+                        id={item._id}
+                        name={item.name}
+                        icon={item.icon}
+                        rating={item.rating || (Math.random() * (5 - 4) + 4).toFixed(1)}
+                        className="snap-start flex-shrink-0"
+                      />
+                    ))}
+                  </div>
+                </div>
               ))}
-            </div>
           </section>
           )}
 

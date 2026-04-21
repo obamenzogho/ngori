@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Search, Info, ExternalLink } from 'lucide-react';
 import BulkImport from '@/app/components/BulkImport';
 
 type ContentType = 'playlists' | 'xtream' | 'mac-portal' | 'apps';
@@ -1012,16 +1013,21 @@ export default function AdminDashboard() {
                             className="w-full rounded-lg border border-white/[0.06] bg-[#0A0A0F] px-4 py-3 text-[#E8E8ED] placeholder-[#5C5C72] outline-none transition focus:border-[#5E6AD2]"
                           />
                         ) : (
-                          <input
-                            type={field.type || 'text'}
-                            value={String(formData[field.name] ?? '')}
-                            onChange={(event) =>
-                              handleFieldChange(field.name, event.target.value)
-                            }
-                            placeholder={field.placeholder}
-                            required={field.required}
-                            className="w-full rounded-lg border border-white/[0.06] bg-[#0A0A0F] px-4 py-3 text-[#E8E8ED] placeholder-[#5C5C72] outline-none transition focus:border-[#5E6AD2]"
-                          />
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted pointer-events-none">
+                              {field.type === 'url' ? <ExternalLink size={14} /> : field.type === 'password' ? <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> : <Info size={14} />}
+                            </span>
+                            <input
+                              type={field.type || 'text'}
+                              value={String(formData[field.name] ?? '')}
+                              onChange={(event) =>
+                                handleFieldChange(field.name, event.target.value)
+                              }
+                              placeholder={field.placeholder}
+                              required={field.required}
+                              className="w-full rounded-lg border border-white/[0.06] bg-[#0A0A0F] pl-10 pr-4 py-3 text-[#E8E8ED] placeholder-[#5C5C72] outline-none transition focus:border-[#5E6AD2]"
+                            />
+                          </div>
                         )}
                       </label>
                     );

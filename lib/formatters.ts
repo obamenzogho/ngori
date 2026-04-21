@@ -3,7 +3,16 @@ import { fr } from 'date-fns/locale';
 
 export function stripHtml(html: string): string {
   if (!html) return '';
-  return html.replace(/<[^>]*>?/gm, ' ').replace(/\s+/g, ' ').trim();
+  return html
+    .replace(/<[^>]*>?/gm, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 export function truncateText(text: string, maxLength: number = 150): string {

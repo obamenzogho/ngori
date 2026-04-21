@@ -81,7 +81,9 @@ export default function ContactPage() {
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-foreground-muted">Nom</label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted" size={16} />
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted pointer-events-none">
+                    <User size={16} />
+                  </span>
                   <input
                     required
                     type="text"
@@ -95,7 +97,9 @@ export default function ContactPage() {
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-foreground-muted">Email</label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted" size={16} />
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted pointer-events-none">
+                    <Mail size={16} />
+                  </span>
                   <input
                     required
                     type="email"
@@ -123,7 +127,9 @@ export default function ContactPage() {
             <div className="space-y-2">
               <label className="text-xs font-bold uppercase tracking-wider text-foreground-muted">Message</label>
               <div className="relative">
-                <MessageSquare className="absolute left-3 top-3 text-foreground-muted" size={16} />
+                <span className="absolute left-3 top-4 text-foreground-muted pointer-events-none">
+                  <MessageSquare size={16} />
+                </span>
                 <textarea
                   required
                   rows={5}
