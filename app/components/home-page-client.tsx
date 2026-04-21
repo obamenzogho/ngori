@@ -9,6 +9,7 @@ import { Music, Radio, Monitor, Smartphone, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { truncateText, normalizeName } from '@/lib/formatters';
 import { useSearch } from '@/app/context/SearchContext';
+import { AppCarousel } from './AppGrid';
 
 export type PlaylistItem = {
   _id: string;
@@ -290,38 +291,30 @@ export default function HomePageClient({
 
           {/* Apps Section - Google Play Store Style */}
           {(filterType === 'all' || filterType === 'apps') && (
-            <section id="apps" className="scroll-mt-32 space-y-12">
-              <div className="flex items-center gap-3 mb-4">
+            <section id="apps" className="scroll-mt-32">
+              <div className="flex items-center gap-3 mb-10">
                 <div className="p-2 bg-purple-500/10 text-purple-400 rounded-lg">
-                  <Smartphone size={24} />
+                  <Smartphone size={28} />
                 </div>
                 <h2 className="text-3xl font-bold text-foreground">Applications</h2>
               </div>
 
-              {Object.entries(appsByCategory).map(([category, apps]) => (
-                <div key={category} className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xl font-bold text-foreground/90">{category}</h3>
-                    <button className="text-sm font-bold text-primary hover:underline">
-                      Voir plus
-                    </button>
-                  </div>
-                  
-                  <div className="flex overflow-x-auto gap-4 pb-6 scrollbar-hide -mx-4 px-4 snap-x">
-                    {apps.map((item) => (
-                      <AppCard
-                        key={item._id}
-                        id={item._id}
-                        name={item.name}
-                        icon={item.icon}
-                        rating={item.rating || (Math.random() * (5 - 4) + 4).toFixed(1)}
-                        className="snap-start flex-shrink-0"
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))}
-          </section>
+              <AppCarousel 
+                title="Récemment ajoutées" 
+                apps={[...filteredContent.appItems].sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()).slice(0, 10)} 
+              />
+              
+              {Object.entries(appsByCategory)
+                .filter(([cat]) => cat !== 'Récemment ajoutées')
+                .map(([category, apps]) => (
+                  <AppCarousel 
+                    key={category}
+                    title={category}
+                    apps={apps}
+                  />
+                ))
+              }
+            </section>
           )}
 
         </div>

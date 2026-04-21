@@ -9,6 +9,8 @@ interface AppCardProps {
   name: string;
   icon?: string;
   rating?: string | number;
+  version?: string;
+  fileSize?: string;
   className?: string;
 }
 
@@ -34,16 +36,16 @@ const StarRating = ({ rating }: { rating: string | number }) => {
   );
 };
 
-export default function AppCard({ id, name, icon, rating, className }: AppCardProps) {
+export default function AppCard({ id, name, icon, rating, version, fileSize, className }: AppCardProps) {
   return (
     <Link 
       href={`/app/${id}`}
       className={cn(
-        "flex flex-col gap-2 w-[160px] md:w-[180px] group transition-all duration-300 hover:scale-[1.03]",
+        "flex flex-col gap-2 w-[140px] md:w-[160px] group transition-all duration-300 hover:scale-[1.03]",
         className
       )}
     >
-      <div className="relative aspect-square w-20 h-20 md:w-24 md:h-24 mx-auto md:mx-0 rounded-2xl overflow-hidden bg-surface border border-white/5 shadow-sm group-hover:shadow-xl group-hover:shadow-primary/10 transition-shadow">
+      <div className="relative aspect-square w-16 h-16 md:w-20 md:h-20 mx-auto md:mx-0 rounded-2xl overflow-hidden bg-surface border border-white/5 shadow-sm group-hover:shadow-xl group-hover:shadow-primary/10 transition-shadow">
         {icon ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img 
@@ -58,10 +60,17 @@ export default function AppCard({ id, name, icon, rating, className }: AppCardPr
         )}
       </div>
       <div className="flex flex-col px-1">
-        <h3 className="text-[14px] font-medium text-foreground truncate group-hover:text-primary transition-colors">
+        <h3 className="text-[13px] font-medium text-foreground truncate group-hover:text-primary transition-colors">
           {name}
         </h3>
         {rating && <StarRating rating={rating} />}
+        
+        <div className="flex flex-col gap-0.5 text-[10px] text-foreground-muted mt-1">
+          <span>Version : {version || 'Dernière'}</span>
+          {fileSize && fileSize !== 'N/A' && fileSize !== 'Inconnue' && (
+            <span>Taille : {fileSize}</span>
+          )}
+        </div>
       </div>
     </Link>
   );

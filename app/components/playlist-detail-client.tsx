@@ -12,13 +12,18 @@ import { motion } from 'framer-motion';
 type PlaylistDetail = {
   _id: string;
   category?: string;
-  content: string;
+  content?: string; // Opt-in content
   createdAt?: string;
   description?: string;
   downloads?: number;
   logo?: string;
   title: string;
   updatedAt?: string;
+  stats: {
+    channels: number;
+    movies: number;
+    series: number;
+  };
 };
 
 // Simple slugify helper
@@ -26,57 +31,41 @@ const slugify = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-')
 
 export default function PlaylistDetailClient({ playlist }: { playlist: PlaylistDetail }) {
   const [isDownloading, setIsDownloading] = useState(false);
-  const [isURLRevealed, setIsURLRevealed] = useState(false);
+  const [isRevealing, setIsRevealing] = useState(false);
+  const [revealedContent, setRevealedContent] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   
-  // M3U Parser for stats
-  const stats = useMemo(() => {
-    const lines = playlist.content?.split('\n') || [];
-    let channels = 0;
-    let movies = 0;
-    let series = 0;
-    
-    lines.forEach(line => {
-      if (line.startsWith('#EXTINF:')) {
-        const lowerLine = line.toLowerCase();
-        // Simple logic to distinguish types based on common tags
-        if (lowerLine.includes('s0') && lowerLine.includes('e0') || lowerLine.includes('s1') || lowerLine.includes('s2')) {
-          series++;
-        } else if (lowerLine.includes('vod') || lowerLine.includes('movie') || lowerLine.includes('film')) {
-          movies++;
-        } else {
-          channels++;
-        }
-      }
-    });
-    
-    // If we found nothing but have lines, count them as channels as fallback
-    if (channels === 0 && movies === 0 && series === 0 && lines.length > 1) {
-      channels = lines.filter(l => l.trim() && !l.startsWith('#')).length;
-    }
-
-    return { channels, movies, series };
-  }, [playlist.content]);
-
-  const isActive = true;
-
-  const handleCopy = async () => {
-    if (!isURLRevealed) {
-      setIsURLRevealed(true);
-      toast.success('Lien révélé !');
-      return;
-    }
+  const handleReveal = async () => {
+    if (revealedContent) return;
+    setIsRevealing(true);
     try {
-      await navigator.clipboard.writeText(playlist.content);
-      toast.success('Lien M3U copié !');
+      const res = await fetch(`/api/playlist/reveal/${playlist._id}`);
+      const data = await res.json();
+      if (data.url) {
+        setRevealedContent(data.url);
+      } else {
+        toast.error('Erreur lors de la récupération du lien');
+      }
     } catch (err) {
-      toast.error('Erreur lors de la copie');
+      toast.error('Erreur réseau');
+    } finally {
+      setIsRevealing(false);
     }
   };
 
+  const handleCopy = () => {
+    if (!revealedContent) return;
+    navigator.clipboard.writeText(revealedContent);
+    setCopied(true);
+    toast.success('Lien copié !');
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   const handleDownload = () => {
+    if (!revealedContent) return;
     setIsDownloading(true);
     try {
-      const blob = new Blob([playlist.content], { type: 'text/plain' });
+      const blob = new Blob([revealedContent], { type: 'text/plain' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -92,6 +81,8 @@ export default function PlaylistDetailClient({ playlist }: { playlist: PlaylistD
       setIsDownloading(false);
     }
   };
+
+  const isActive = true;
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-5xl">
@@ -134,80 +125,79 @@ export default function PlaylistDetailClient({ playlist }: { playlist: PlaylistD
                 </div>
               </div>
               <div className="flex flex-col gap-1">
-                <span className="text-[10px] uppercase tracking-wider text-foreground-muted font-bold">Live TV</span>
+                <span className="text-[10px] uppercase tracking-wider text-foreground-muted font-bold">Chaînes Live</span>
                 <div className="flex items-center gap-2 text-foreground font-medium">
                   <Activity size={14} className="text-success" />
-                  <span>{stats.channels}</span>
+                  <span>{playlist.stats.channels}</span>
                 </div>
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-[10px] uppercase tracking-wider text-foreground-muted font-bold">Films</span>
-                <span className="text-foreground font-medium">{stats.movies > 0 ? stats.movies : '0'}</span>
+                <span className="text-foreground font-medium text-sm md:text-base">{playlist.stats.movies > 0 ? playlist.stats.movies : 'N/A'}</span>
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-[10px] uppercase tracking-wider text-foreground-muted font-bold">Séries</span>
-                <span className="text-foreground font-medium">{stats.series > 0 ? stats.series : '0'}</span>
+                <span className="text-foreground font-medium text-sm md:text-base">{playlist.stats.series > 0 ? playlist.stats.series : 'N/A'}</span>
               </div>
             </div>
 
-            <div className="mt-8 flex flex-col gap-4">
-              {!isURLRevealed && (
-                <button 
-                  onClick={() => setIsURLRevealed(true)}
-                  className="w-full flex items-center justify-center gap-2 linear-btn linear-btn-primary py-4 px-6 text-sm font-bold shadow-lg shadow-primary/20"
-                >
-                  <Activity size={18} />
-                  Révéler le lien M3U
-                </button>
-              )}
-
-              {isURLRevealed && (
-                <div className="flex flex-wrap gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="mt-8 space-y-4">
+              <h3 className="font-bold text-foreground">Lien de la playlist</h3>
+              
+              {revealedContent ? (
+                <div className="space-y-4 animate-in fade-in duration-300">
+                  <div className="flex items-center gap-2 p-4 bg-background-elevated rounded-xl border border-border group">
+                    <span className="flex-1 text-xs md:text-sm font-mono text-foreground-secondary break-all line-clamp-2 md:line-clamp-none">
+                      {revealedContent}
+                    </span>
+                    <button 
+                      onClick={handleCopy}
+                      className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors flex-shrink-0"
+                      title="Copier le lien"
+                    >
+                      {copied ? '✓' : <Copy size={18} />}
+                    </button>
+                  </div>
+                  <div className="flex gap-4">
+                    <button 
+                      onClick={handleDownload}
+                      disabled={isDownloading}
+                      className="flex-1 flex items-center justify-center gap-2 linear-btn linear-btn-primary py-3 text-sm font-bold"
+                    >
+                      <Download size={18} />
+                      Télécharger .m3u
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between p-4 bg-background-elevated rounded-xl border border-border border-dashed">
+                  <span className="text-sm font-mono text-foreground-muted italic">••••••••••••••••••••••••••••••</span>
                   <button 
-                    onClick={handleCopy}
-                    className="flex-1 flex items-center justify-center gap-2 linear-btn linear-btn-primary py-3 px-6 text-sm"
+                    onClick={handleReveal}
+                    disabled={isRevealing}
+                    className="linear-btn linear-btn-primary px-6 py-2 text-xs font-bold"
                   >
-                    <Copy size={18} />
-                    Copier le lien M3U
-                  </button>
-                  <button 
-                    onClick={handleDownload}
-                    disabled={isDownloading}
-                    className="flex-1 flex items-center justify-center gap-2 linear-btn bg-surface border border-border text-foreground hover:bg-background-elevated py-3 px-6 text-sm transition-all"
-                  >
-                    <Download size={18} />
-                    Télécharger M3U
+                    {isRevealing ? 'Chargement...' : 'Révéler le lien'}
                   </button>
                 </div>
               )}
             </div>
           </motion.div>
 
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="linear-card p-6"
-          >
-            <h3 className="text-lg font-bold mb-4">Aperçu du contenu</h3>
-            {isURLRevealed ? (
-              <div className="bg-background rounded-xl p-4 border border-border overflow-x-auto animate-in fade-in duration-500">
+          {revealedContent && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="linear-card p-6"
+            >
+              <h3 className="text-lg font-bold mb-4">Aperçu du contenu</h3>
+              <div className="bg-background rounded-xl p-4 border border-border overflow-x-auto">
                 <pre className="text-xs font-mono text-foreground-muted whitespace-pre-wrap break-all max-h-[300px] overflow-y-auto">
-                  {playlist.content}
+                  {revealedContent}
                 </pre>
               </div>
-            ) : (
-              <div className="bg-background-elevated/50 rounded-xl p-12 border border-border border-dashed flex flex-col items-center justify-center text-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-surface flex items-center justify-center text-foreground-muted">
-                  <Activity size={24} />
-                </div>
-                <div>
-                  <p className="text-sm text-foreground-secondary font-medium">Contenu masqué par sécurité</p>
-                  <p className="text-xs text-foreground-muted mt-1">Cliquez sur &quot;Révéler le lien&quot; pour afficher le contenu M3U.</p>
-                </div>
-              </div>
-            )}
-          </motion.div>
+            </motion.div>
+          )}
         </div>
 
         {/* Right Column: Visual/Logo */}

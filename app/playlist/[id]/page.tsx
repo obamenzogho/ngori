@@ -7,18 +7,43 @@ import type { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
 
-function serializePlaylist(playlist: Awaited<ReturnType<typeof Playlist.findOne>>) {
+function serializePlaylist(playlist: any) {
+  const content = playlist.content || '';
+  const lines = content.split('\n');
+  
+  let channels = 0;
+  let movies = 0;
+  let series = 0;
+  
+  lines.forEach((line: string) => {
+    if (line.startsWith('#EXTINF:')) {
+      const lower = line.toLowerCase();
+      if (lower.includes('s0') && lower.includes('e0') || lower.includes('s1') || lower.includes('s2')) {
+        series++;
+      } else if (lower.includes('vod') || lower.includes('movie') || lower.includes('film')) {
+        movies++;
+      } else {
+        channels++;
+      }
+    }
+  });
+
+  // Fallback
+  if (channels === 0 && movies === 0 && series === 0 && lines.length > 1) {
+    channels = lines.filter((l: string) => l.trim() && !l.startsWith('#')).length;
+  }
+
   return {
-    ...playlist,
     _id: String(playlist._id),
-    createdAt:
-      playlist.createdAt instanceof Date
-        ? playlist.createdAt.toISOString()
-        : playlist.createdAt,
-    updatedAt:
-      playlist.updatedAt instanceof Date
-        ? playlist.updatedAt.toISOString()
-        : playlist.updatedAt,
+    title: playlist.title,
+    description: playlist.description,
+    category: playlist.category,
+    logo: playlist.logo,
+    isActive: playlist.isActive,
+    createdAt: playlist.createdAt instanceof Date ? playlist.createdAt.toISOString() : playlist.createdAt,
+    updatedAt: playlist.updatedAt instanceof Date ? playlist.updatedAt.toISOString() : playlist.updatedAt,
+    stats: { channels, movies, series }
+    // Note: content is NOT sent here to keep it hidden from initial DOM
   };
 }
 
@@ -69,7 +94,7 @@ export default async function PlaylistDetailPage({
 
     const serialized = serializePlaylist(playlist);
 
-    return <PlaylistDetailClient playlist={serialized} />;
+    return <PlaylistDetailClient playlist={serialized as any} />;
   } catch (error) {
     console.error('Error loading playlist detail:', error);
     notFound();
